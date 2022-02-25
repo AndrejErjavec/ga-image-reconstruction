@@ -1,2 +1,2 @@
 # ga-image-reconstruction
-[School project] Image reconstruction using genetic algorithm
+[school project] Image reconstruction using genetic algorithm
