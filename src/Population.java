@@ -7,6 +7,7 @@ public class Population {
     Pixel[] pixels;
     float mutationRate;
     BufferedImage target_image;
+    Canvas canvas;
 
     public Population(int size, float mutationRate, BufferedImage target_image) {
         this.size = size;
@@ -15,17 +16,20 @@ public class Population {
         this.target_image = target_image;
     }
 
-    public Population(int size, float mutationRate) {
+    public Population(int size, float mutationRate, Canvas canvas) {
         this.size = size;
         this.pixels = new Pixel[size];
         this.mutationRate = mutationRate;
+        this.canvas = canvas;
     }
 
 
     public void initialize() {
         for (int i = 0; i < this.size; i++) {
-            int image_width = target_image.getWidth();
-            int image_height = target_image.getHeight();
+            // int image_width = target_image.getWidth();
+            // int image_height = target_image.getHeight();
+            int image_width = canvas.getWidth();
+            int image_height = canvas.getHeight();
             int pos_x = (int)(Math.random() * image_width);
             int pos_y = (int)(Math.random() * image_height);
             int gray_shade = (int)(Math.random() * 255);
@@ -34,11 +38,11 @@ public class Population {
         }
     }
 
-    public void draw(Canvas g) {
-        for (int i = 0; i < this.size; i++) {
+    public void draw(Graphics g) {
+        for (int i = 0; i < pixels.length; i++) {
             int pos_x = pixels[i].pos_x;
             int pos_y = pixels[i].pos_y;
-            //g.paint();
+            g.fillRect(pos_x, pos_y, 1, 1);
         }
     }
 }
