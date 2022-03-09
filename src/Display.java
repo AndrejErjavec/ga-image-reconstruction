@@ -29,13 +29,9 @@ public class Display {
         canvas.setPreferredSize(new Dimension(width, height));
         canvas.setMaximumSize(new Dimension(width, height));
         canvas.setMinimumSize(new Dimension(width, height));
+        canvas.setBackground(Color.white);
         frame.add(canvas);
         frame.pack(); // resizes the window to fit whole frame inside
-    }
-
-    private void paint(Graphics g) {
-        g.setColor(Color.white);
-        g.clearRect(0, 0, width, height);
     }
 
     public Canvas getCanvas() {
