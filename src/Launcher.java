@@ -5,11 +5,10 @@ import java.io.IOException;
 
 public class Launcher {
     public static void main(String[] args) {
-        String IMAGE_PATH = "C:/Users/Andrej/Desktop/48.gif";
-        int POPULATION_SIZE = 1000;
+        String IMAGE_PATH = new File("images/bw.png").getAbsolutePath();
+        int POPULATION_SIZE = 10000;
         float MUTATION_RATE = 0.1f;
-        int WIDTH = 800;
-        int HEIGHT = 600;
+        int MAX_GENERATIONS = 10;
         int PIXEL_SIZE = 5;
         BufferedImage TARGET_IMAGE = null;
         try {
@@ -18,9 +17,7 @@ public class Launcher {
             e.printStackTrace();
         }
 
-        ImageReconstruction ir = new ImageReconstruction(WIDTH, HEIGHT, POPULATION_SIZE, MUTATION_RATE, PIXEL_SIZE, TARGET_IMAGE);
-        ir.init();
-        ir.draw();
-
+        ImageReconstruction ir = new ImageReconstruction(POPULATION_SIZE, MUTATION_RATE, MAX_GENERATIONS, PIXEL_SIZE, TARGET_IMAGE);
+        ir.run();
     }
 }

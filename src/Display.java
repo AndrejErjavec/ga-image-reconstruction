@@ -11,6 +11,7 @@ public class Display {
         this.title = title;
         this.width = width;
         this.height = height;
+
         initializeDisplay();
         initializeCanvas();
     }
