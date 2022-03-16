@@ -10,4 +10,11 @@ public class Pixel {
         this.pos_y = pos_y;
         this.color = color;
     }
+
+    public Pixel(int max_x, int max_y) {
+        this.pos_x = (int)(Math.random() * max_x);
+        this.pos_y = (int)(Math.random() * max_y);
+        int randomColor = (int) (Math.random() * 255);
+        this.color = new Color(randomColor, randomColor, randomColor);
+    }
 }

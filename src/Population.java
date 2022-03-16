@@ -1,20 +1,20 @@
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
-import java.util.Arrays;
 
 public class Population {
     public int size;
     public int pixel_size;
-    public ArrayList<Pixel[]> population;
+    public ArrayList<Image> population;
     public float mutationRate;
     public BufferedImage target_image;
+    public ArrayList<Image> matingPool;
+    public float bestFitness;
 
     private int image_width;
     private int image_height;
     public int total_pixels;
 
-    ColorUtils cu = new ColorUtils();
 
     public Population(int size, float mutationRate, int pixel_size, BufferedImage target_image) {
         this.size = size;
@@ -28,62 +28,58 @@ public class Population {
         this.total_pixels = (image_width * image_height) / pixel_size;
     }
 
-
     public void initialize() {
         for (int i = 0; i < this.size; i++) {
-            Pixel[] image = new Pixel[total_pixels];
-            for (int j = 0; j < total_pixels; j++) {
-                int pos_x = (int)(Math.random() * image_width);
-                int pos_y = (int)(Math.random() * image_height);
-                int gray_shade = (int)(Math.random() * 255);
-                Color color = new Color(gray_shade, gray_shade, gray_shade);
-                image[j] = new Pixel(pos_x, pos_y, color);
-            }
+            Image image = new Image(image_width, image_height);
+            image.calculateFitness(target_image, pixel_size);
             population.add(image);
         }
     }
 
-    public int[] calculateFitness() {
-        int[] fitness = new int[size];
+    public void naturalSelection() {
+        // System.out.println("Performing natural selection...");
+        this.matingPool = new ArrayList<>();
+
         for (int i = 0; i < population.size(); i++) {
-            int total_diff = 0;
-            Pixel[] image = population.get(i);
-            for (int j = 0; j < total_pixels; j++) {
-                total_diff += cu.colorDiff(image[j], pixel_size, target_image);
-            }
-            fitness[i] = total_diff;
-        }
-        return fitness;
-    }
-
-    public int bestFitness() {
-        int index = 0;
-        long currentBest = Integer.MAX_VALUE;
-        int[] fitnessArray = calculateFitness();
-        for (int i = 0; i < fitnessArray.length; i++) {
-            if (fitnessArray[i] < currentBest) {
-                currentBest = fitnessArray[i];
-                index = i;
+            int n = (int) (population.get(i).fitness * 100);
+            for (int j = 0; j < n; j++) {
+                matingPool.add(population.get(i));
             }
         }
-        return index;
     }
 
-    public Pixel[] bestImage() {
-        int bestImageIndex = bestFitness();
-        Pixel[] best = population.get(bestImageIndex);
-        return best;
+    public void generateNewPopulation() {
+        // System.out.println("Generating new population...");
+        for (int i = 0; i < population.size(); i++) {
+            int a = (int)(Math.random() * matingPool.size());
+            int b = (int)(Math.random() * matingPool.size());
+
+            Image parentA = matingPool.get(a);
+            Image parentB = matingPool.get(b);
+
+            Image child = parentA.crossover(parentB);
+            child.mutate(mutationRate);
+            this.population.set(i, child);
+        }
     }
 
+    public Image getBestFittingImage() {
+        // System.out.println("Getting best fitting image...");
+        float bestFitness = 0;
+        int best = 0;
+        for (int i = 0; i < population.size(); i++) {
+            if (population.get(i).fitness > bestFitness) {
+                bestFitness = population.get(i).fitness;
+                best = i;
+            }
+        }
+        this.bestFitness = bestFitness;
+        return population.get(best);
+    }
 
     public void draw(Graphics g) {
-        Pixel[] pixels = bestImage();
-        for (int i = 0; i < pixels.length; i++) {
-            int pos_x = pixels[i].pos_x;
-            int pos_y = pixels[i].pos_y;
-            g.setColor(pixels[i].color);
-            g.fillRect(pos_x, pos_y, pixel_size, pixel_size);
-            // System.out.println("(" + pixels[i].pos_x + ", " + pixels[i].pos_y + ", " + pixels[i].color + ")");
-        }
+        Image image = getBestFittingImage();
+        // System.out.println("Drawing best image...");
+        image.draw(g, pixel_size);
     }
 }

@@ -32,7 +32,11 @@ public class ImageReconstruction {
             start();
             init();
             while (running) {
+                population.naturalSelection();
+                population.generateNewPopulation();
                 draw();
+                print();
+                current_generation++;
             }
         }
 
@@ -51,15 +55,22 @@ public class ImageReconstruction {
             bs = display.getCanvas().getBufferStrategy();
             if(bs == null) {
                 display.getCanvas().createBufferStrategy(3);
-                return;
+                draw();
             }
 
             g = bs.getDrawGraphics();
             // drawing starts
+            g.clearRect(0, 0, target_image.getWidth(), target_image.getHeight());
             population.draw(g);
             // drawing ends
             bs.show();
-            g.dispose();
+            //g.dispose();
+        }
+
+        public void print() {
+            System.out.println("Current generation: " + current_generation);
+            System.out.println("Best fitness: " + population.bestFitness);
+            System.out.println("--------------------------------------------");
         }
 
 }

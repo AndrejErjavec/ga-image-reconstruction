@@ -3,17 +3,17 @@ import java.awt.image.BufferedImage;
 
 public class ColorUtils {
 
-    public int colorDiff(Pixel a, int pixel_size, BufferedImage target_image) {
+    public float colorDiff(Pixel a, int pixel_size, BufferedImage target_image) {
         int pos_x = a.pos_x;
         int pos_y = a.pos_y;
-        Color targetPixelColor = new Color(target_image.getRGB(pos_x, pos_y));//averageColor(pos_x, pos_y, pixel_size, pixel_size, pixel_size, target_image); // new Color(target_image.getRGB(pos_x, pos_y));
+        Color targetPixelColor = new Color(target_image.getRGB(pos_x, pos_y));//averageColor(pos_x, pos_y, pixel_size, pixel_size, pixel_size, target_image);
         int targetPixelR = targetPixelColor.getRed();
         int targetPixelG = targetPixelColor.getGreen();
         int targetPixelB = targetPixelColor.getBlue();
         int diffR = Math.abs(a.color.getRed() - targetPixelR);
         int diffG = Math.abs(a.color.getGreen() - targetPixelG);
         int diffB = Math.abs(a.color.getBlue() - targetPixelB);
-        return diffR + diffG + diffB;
+        return (float)(diffR + diffG + diffB) / 3;
     }
 
     public Color averageColor(int startX, int startY, int width, int height, int pixel_size, BufferedImage image) {
