@@ -31,7 +31,7 @@ public class ImageReconstruction {
         public void run() {
             start();
             init();
-            while (running) {
+            while (running && current_generation <= max_generations) {
                 population.naturalSelection();
                 population.generateNewPopulation();
                 draw();
@@ -69,7 +69,8 @@ public class ImageReconstruction {
 
         public void print() {
             System.out.println("Current generation: " + current_generation);
-            System.out.println("Best fitness: " + population.bestFitness);
+            System.out.println("Best fitness: " + Math.round(population.bestFittingImage.fitness * 100) / 100d);
+            System.out.println("Average fitness: " + population.averageFitness);
             System.out.println("--------------------------------------------");
         }
 

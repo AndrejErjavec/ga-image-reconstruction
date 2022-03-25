@@ -8,7 +8,7 @@ public class Launcher {
         String IMAGE_PATH = new File("images/bw.png").getAbsolutePath();
         int POPULATION_SIZE = 1000;
         float MUTATION_RATE = 0.1f;
-        int MAX_GENERATIONS = 10;
+        int MAX_GENERATIONS = 10000;
         int PIXEL_SIZE = 1;
         BufferedImage TARGET_IMAGE = null;
         try {

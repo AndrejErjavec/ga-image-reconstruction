@@ -16,6 +16,17 @@ public class ColorUtils {
         return (float)(diffR + diffG + diffB) / 3;
     }
 
+    public int isRightColor(Pixel a, BufferedImage target_image) {
+        int pos_x = a.pos_x;
+        int pos_y = a.pos_y;
+        Color targetPixelColor = new Color(target_image.getRGB(pos_x, pos_y));
+
+        if (a.color.equals(targetPixelColor)) {
+            return 1;
+        }
+        return 0;
+    }
+
     public Color averageColor(int startX, int startY, int width, int height, int pixel_size, BufferedImage image) {
         int pixels = width * height;
         int sumR = 0, sumG = 0, sumB = 0;
