@@ -7,9 +7,10 @@ public class Launcher {
     public static void main(String[] args) {
         String IMAGE_PATH = new File("images/bw.png").getAbsolutePath();
         int POPULATION_SIZE = 1000;
+        int IMAGE_FRAGMENTS = 100;
         float MUTATION_RATE = 0.1f;
         int MAX_GENERATIONS = 10000;
-        int PIXEL_SIZE = 1;
+
         BufferedImage TARGET_IMAGE = null;
         try {
             TARGET_IMAGE =  ImageIO.read(new File(IMAGE_PATH));
@@ -17,7 +18,7 @@ public class Launcher {
             e.printStackTrace();
         }
 
-        ImageReconstruction ir = new ImageReconstruction(POPULATION_SIZE, MUTATION_RATE, MAX_GENERATIONS, PIXEL_SIZE, TARGET_IMAGE);
+        ImageReconstruction ir = new ImageReconstruction(POPULATION_SIZE, IMAGE_FRAGMENTS, MUTATION_RATE, MAX_GENERATIONS, TARGET_IMAGE);
         ir.run();
     }
 }
