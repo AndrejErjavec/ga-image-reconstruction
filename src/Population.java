@@ -1,9 +1,8 @@
-import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 
 public class Population {
     public int size;
@@ -11,7 +10,7 @@ public class Population {
     public float mutationRate;
     public BufferedImage target_image;
     public int image_fragments;
-    public ArrayList<Image> matingPool;
+    public ArrayList<Image> selectionPool;
 
     public float bestFitness;
     public Image bestFittingImage;
@@ -27,7 +26,7 @@ public class Population {
         this.mutationRate = mutationRate;
         this.target_image = target_image;
         this.population = new ArrayList<>();
-        this.matingPool = new ArrayList<>();
+        this.selectionPool = new ArrayList<>();
         this.bestFitness = 0.0f;
         this.averageFitness = 0.0f;
 
@@ -45,15 +44,22 @@ public class Population {
 
     public void naturalSelection() {
         // System.out.println("Performing natural selection...");
-        matingPool.clear();
+        selectionPool.clear();
         for (int i = 0; i < population.size(); i++) {
             population.get(i).calculateFitness(target_image);
-            int n = (int) (population.get(i).fitness /* *100 */ );
+
+            /*
+            int n = (int)(population.get(i).fitness);
+
+            System.out.println(n);
             for (int j = 0; j < n; j++) {
-                matingPool.add(population.get(i));
+                selectionPool.add(population.get(i));
             }
-            matingPool.add(population.get(i));
+            */
+            selectionPool.add(population.get(i));
         }
+
+        sortSelectionPool();
 
         getBestFittingImage();
         getAverageFitness();
@@ -61,12 +67,20 @@ public class Population {
 
     public void generateNewPopulation() {
         // System.out.println("Generating new population...");
-        for (int i = 0; i < population.size(); i++) {
-            int a = (int)(Math.random() * matingPool.size());
-            int b = (int)(Math.random() * matingPool.size());
 
-            Image parentA = matingPool.get(a);
-            Image parentB = matingPool.get(b);
+        ArrayList<Image> best = new ArrayList<>();
+        best.add(selectionPool.get(0));
+        best.add(selectionPool.get(1));
+        best.add(selectionPool.get(2));
+        best.add(selectionPool.get(3));
+
+
+        for (int i = 0; i < population.size(); i++) {
+            int a = (int)(Math.random() * best.size());
+            int b = (int)(Math.random() * best.size());
+
+            Image parentA = best.get(a);
+            Image parentB = best.get(b);
 
             Image child = parentA.crossover(parentB);
             child.mutate(mutationRate);
@@ -75,8 +89,18 @@ public class Population {
         }
     }
 
+    private void sortSelectionPool() {
+        Collections.sort(selectionPool, new Comparator<Image>() {
+            public int compare(Image img1, Image img2) {
+                return Float.valueOf(img2.fitness).compareTo(Float.valueOf(img1.fitness));
+            }
+        });
+    }
+
     public void getBestFittingImage() {
+        this.bestFittingImage = selectionPool.get(0);
         // System.out.println("Getting best fitting image...");
+        /*
         for (int i = 0; i < population.size(); i++) {
             Image img  = population.get(i);
             if (img.fitness > this.bestFitness) {
@@ -84,6 +108,7 @@ public class Population {
                 this.bestFittingImage = img;
             }
         }
+        */
     }
 
     public void getAverageFitness() {

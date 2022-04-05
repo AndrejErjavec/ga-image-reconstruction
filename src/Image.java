@@ -42,8 +42,7 @@ public class Image {
 
     public void calculateFitness(BufferedImage target_image) {
         ImageUtils imageUtils = new ImageUtils();
-        float fitness = imageUtils.ImageMSE(this.image, target_image);
-        this.fitness = fitness;
+        this.fitness =  - imageUtils.ImageMSE(this.image, target_image);
     }
 
     public Image crossover(Image parent2) {

@@ -15,19 +15,23 @@ public class ImageUtils {
                 int srcPixelG = srcPixelColor.getGreen();
                 int srcPixelB = srcPixelColor.getBlue();
 
-                Color targetPixelColor = new Color(src_image.getRGB(i, j));
+                Color targetPixelColor = new Color(target_image.getRGB(i, j));
                 int targetPixelR = targetPixelColor.getRed();
                 int targetPixelG = targetPixelColor.getGreen();
                 int targetPixelB = targetPixelColor.getBlue();
 
-                double diffR_sq = Math.pow((srcPixelR - targetPixelR), 2d);
-                double diffG_sq = Math.pow((srcPixelG - targetPixelG), 2d);
-                double diffB_sq = Math.pow((srcPixelB - targetPixelB), 2d);
+                int diffR = srcPixelR - targetPixelR;
+                int diffG = srcPixelG - targetPixelG;
+                int diffB = srcPixelB - targetPixelB;
+
+                double diffR_sq = Math.pow(diffR, 2d);
+                double diffG_sq = Math.pow(diffG, 2d);
+                double diffB_sq = Math.pow(diffB, 2d);
 
                 diff += (diffR_sq + diffG_sq + diffB_sq);
-                // System.out.println(diff);
             }
         }
-        return diff / (3 * src_image.getHeight()* src_image.getWidth());
+
+        return diff / (3 * src_image.getHeight() * src_image.getWidth());
     }
 }
