@@ -13,5 +13,20 @@ public class TriangleFragment {
         this.color = color;
     }
 
+    public void moveP1(int x, int y) {
+        this.p1 = new Point(x, y);
+    }
+
+    public void moveP2(int x, int y) {
+        this.p2 = new Point(x, y);
+    }
+
+    public void moveP3(int x, int y) {
+        this.p3 = new Point(x, y);
+    }
+
+    public void changeColor(Color color) {
+        this.color = color;
+    }
 
 }

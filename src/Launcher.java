@@ -6,9 +6,9 @@ import java.io.IOException;
 public class Launcher {
     public static void main(String[] args) {
         String IMAGE_PATH = new File("images/monalisa.gif").getAbsolutePath();
-        int POPULATION_SIZE = 500;
-        int IMAGE_FRAGMENTS = 100;
-        float MUTATION_RATE = 0.05f;
+        int POPULATION_SIZE = 50;
+        int IMAGE_FRAGMENTS = 70;
+        float MUTATION_RATE = 0.02f;
         int MAX_GENERATIONS = 10000;
 
         BufferedImage TARGET_IMAGE = null;

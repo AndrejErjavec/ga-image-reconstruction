@@ -1,28 +1,27 @@
 import java.awt.*;
 import java.awt.image.BufferedImage;
 
-public class ImageUtils {
-
-    public float ImageMSE(BufferedImage src_image, BufferedImage target_image) {
-        if (src_image.getHeight() != target_image.getHeight() | src_image.getWidth() != target_image.getWidth()) {
+public class MSESingle {
+    public float ImageMSE(BufferedImage srcImage, BufferedImage targetImage) {
+        if (srcImage.getHeight() != targetImage.getHeight() | srcImage.getWidth() != targetImage.getWidth()) {
             throw new Error("Images should be equal in size");
         }
         float diff = 0.0f;
-        for (int i = 0; i < src_image.getHeight(); i++) {
-            for (int j = 0; j < src_image.getWidth(); j++) {
-                Color srcPixelColor = new Color(src_image.getRGB(i, j));
+        for (int i = 0; i < srcImage.getHeight(); i++) {
+            for (int j = 0; j < srcImage.getWidth(); j++) {
+                Color srcPixelColor = new Color(srcImage.getRGB(i, j));
                 int srcPixelR = srcPixelColor.getRed();
                 int srcPixelG = srcPixelColor.getGreen();
                 int srcPixelB = srcPixelColor.getBlue();
 
-                Color targetPixelColor = new Color(target_image.getRGB(i, j));
+                Color targetPixelColor = new Color(targetImage.getRGB(i, j));
                 int targetPixelR = targetPixelColor.getRed();
                 int targetPixelG = targetPixelColor.getGreen();
                 int targetPixelB = targetPixelColor.getBlue();
 
-                int diffR = srcPixelR - targetPixelR;
-                int diffG = srcPixelG - targetPixelG;
-                int diffB = srcPixelB - targetPixelB;
+                int diffR = 255 - Math.abs(srcPixelR - targetPixelR);
+                int diffG = 255 - Math.abs(srcPixelG - targetPixelG);
+                int diffB = 255 - Math.abs(srcPixelB - targetPixelB);
 
                 double diffR_sq = Math.pow(diffR, 2d);
                 double diffG_sq = Math.pow(diffG, 2d);
@@ -31,7 +30,7 @@ public class ImageUtils {
                 diff += (diffR_sq + diffG_sq + diffB_sq);
             }
         }
-
-        return diff / (3 * src_image.getHeight() * src_image.getWidth());
+        return diff / (float) (3 * srcImage.getHeight() * srcImage.getWidth());
     }
+
 }

@@ -1,5 +1,9 @@
+import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class Image {
     int width;
@@ -8,6 +12,9 @@ public class Image {
     TriangleFragment[] fragments;
     BufferedImage image;
     float fitness;
+    int fitnessScore;
+
+    AtomicInteger atomicResult = new AtomicInteger(0);
 
     public Image(int width, int height, int fragment_count) {
         this.width = width;
@@ -19,6 +26,8 @@ public class Image {
     private void initialize() {
         this.image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
         this.fragments = new TriangleFragment[fragment_count];
+        this.fitness = 0.0f;
+        this.fitnessScore = 0;
 
         for (int i = 0; i < fragment_count; i++) {
             int p1_pos_x = (int) (Math.random() * width);
@@ -33,6 +42,7 @@ public class Image {
             Point p3 = new Point(p3_pos_x, p3_pos_y);
 
             int gray_shade = (int)(Math.random() * 255);
+            int alpha = (int)(Math.random() * 100);
             Color color = new Color(gray_shade, gray_shade, gray_shade);
 
             this.fragments[i] = new TriangleFragment(p1, p2, p3, color);
@@ -41,26 +51,87 @@ public class Image {
     }
 
     public void calculateFitness(BufferedImage target_image) {
-        ImageUtils imageUtils = new ImageUtils();
-        this.fitness =  - imageUtils.ImageMSE(this.image, target_image);
-    }
+        /*int threads = Runtime.getRuntime().availableProcessors();
+        int chunkHeight = height / threads;
 
-    public Image crossover(Image parent2) {
-        Image child = new Image(width, height, fragment_count);
-        int mid = (fragments.length / 2);
-
-        for (int i = 0; i < child.fragments.length; i++) {
-            if (i <= mid) {
-                child.fragments[i] = this.fragments[i];
+        MSEWorker[] workers = new MSEWorker[threads];
+        for (int i = 0; i < threads; i++) {
+            if (i == threads - 1) {
+                workers[i] = new MSEWorker(i, i*chunkHeight, i*chunkHeight, this.image, target_image, atomicResult);
             }
             else {
-                child.fragments[i] = parent2.fragments[i];
+                workers[i] = new MSEWorker(i, i*chunkHeight, i*chunkHeight + chunkHeight, this.image, target_image, atomicResult);
+                workers[i].start();
             }
+        }
+
+        for (int i = 0; i < threads; i++) {
+            try {
+                workers[i].join();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+        this.fitness = atomicResult.floatValue();*/
+    }
+
+    /**
+     * CROSSOVER METHODS:
+     * one point crossover
+     * multi point crossover
+     * uniform crossover
+     */
+    public Image onePointCrossover(Image parent2) {
+        Image child = new Image(width, height, fragment_count);
+        double splitPoint = Math.random() * fragments.length;
+        for (int i = 0; i < child.fragments.length; i++) {
+            if (i <= splitPoint) {child.fragments[i] = this.fragments[i];}
+            else {child.fragments[i] = parent2.fragments[i];}
+        }
+        return child;
+    }
+
+    public Image multiPointCrossover(Image parent2) {
+        Image child = new Image(width, height, fragment_count);
+        return child;
+    }
+
+    public Image uniformCrossover(Image parent2) {
+        Image child = new Image(width, height, fragment_count);
+        for (int i = 0; i < child.fragments.length; i++) {
+            double coin = Math.random();
+            if (coin <= 0.5) {child.fragments[i] = this.fragments[i];}
+            else {child.fragments[i] = parent2.fragments[i];}
         }
         return child;
     }
 
     public void mutate(float mutation_rate) {
+        for (int i = 0; i < fragments.length; i++) {
+            double r = Math.random();
+            if (r <= 0.5) {
+                if (r <= 0.166) {
+                    int p1_pos_x = (int) (Math.random() * width);
+                    int p1_pos_y = (int) (Math.random() * height);
+                    fragments[i].moveP1(p1_pos_x, p1_pos_y);
+                } else if (r <= 0.333) {
+                    int p2_pos_x = (int) (Math.random() * width);
+                    int p2_pos_y = (int) (Math.random() * height);
+                    fragments[i].moveP2(p2_pos_x, p2_pos_y);
+                } else {
+                    int p3_pos_x = (int) (Math.random() * width);
+                    int p3_pos_y = (int) (Math.random() * height);
+                    fragments[i].moveP3(p3_pos_x, p3_pos_y);
+                }
+            }
+            else {
+                int gray_shade = (int)(Math.random() * 255);
+                fragments[i].changeColor(new Color(gray_shade, gray_shade, gray_shade));
+            }
+        }
+    }
+
+    public void mutateOriginal(float mutation_rate) {
         for (int i = 0; i < fragments.length; i++) {
             if (Math.random() < mutation_rate) {
                 int p1_pos_x = (int) (Math.random() * width);
@@ -71,6 +142,7 @@ public class Image {
                 int p3_pos_y = (int) (Math.random() * height);
 
                 int gray_shade = (int)(Math.random() * 255);
+                int alpha = (int)(Math.random() * 100);
                 Color color = new Color(gray_shade, gray_shade, gray_shade);
 
                 fragments[i] = new TriangleFragment(new Point(p1_pos_x, p1_pos_y), new Point(p2_pos_x, p2_pos_y), new Point(p3_pos_x, p3_pos_y), color);
@@ -97,4 +169,13 @@ public class Image {
         g.drawImage(this.image, 0, 0, null);
     }
 
+    public void export() {
+        try {
+            File imageExport = new File("result.png");
+            ImageIO.write(this.image, "png", imageExport);
+        }
+        catch (IOException e){
+            e.printStackTrace();
+        }
+    }
 }
