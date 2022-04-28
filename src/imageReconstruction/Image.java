@@ -1,9 +1,12 @@
+package imageReconstruction;
+
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
+import imageReconstruction.Config;
 
 public class Image {
     int width;
@@ -13,8 +16,6 @@ public class Image {
     BufferedImage image;
     float fitness;
     int fitnessScore;
-
-    AtomicInteger atomicResult = new AtomicInteger(0);
 
     public Image(int width, int height, int fragment_count) {
         this.width = width;
@@ -26,7 +27,7 @@ public class Image {
     private void initialize() {
         this.image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
         this.fragments = new TriangleFragment[fragment_count];
-        this.fitness = 0.0f;
+        this.fitness = 0;
         this.fitnessScore = 0;
 
         for (int i = 0; i < fragment_count; i++) {
@@ -42,27 +43,41 @@ public class Image {
             Point p3 = new Point(p3_pos_x, p3_pos_y);
 
             int gray_shade = (int)(Math.random() * 255);
-            int alpha = (int)(Math.random() * 100);
             Color color = new Color(gray_shade, gray_shade, gray_shade);
-
+            if (Config.useAlphaColors) {
+                int alpha = (int)(Math.random() * 100);
+                color = new Color(gray_shade, gray_shade, gray_shade, alpha);
+            }
             this.fragments[i] = new TriangleFragment(p1, p2, p3, color);
         }
         generateImage();
     }
 
     public void calculateFitness(BufferedImage target_image) {
-        /*int threads = Runtime.getRuntime().availableProcessors();
-        int chunkHeight = height / threads;
+        switch (Config.runMode) {
+            case SEQUENTIAL:
+                calculateFitnessSequential(target_image);
+            case PARALLEL:
+                calculateFitnessParallel(target_image);
+            case DISTRIBUTED:
+                calculateFitnessSequential(target_image);
+        }
+    }
 
+    private void calculateFitnessParallel(BufferedImage targetImage) {
+        int threads = Runtime.getRuntime().availableProcessors();
+        int chunkHeight = height / threads;
+        AtomicLong fitnessResult = new AtomicLong(0);
         MSEWorker[] workers = new MSEWorker[threads];
+
         for (int i = 0; i < threads; i++) {
             if (i == threads - 1) {
-                workers[i] = new MSEWorker(i, i*chunkHeight, i*chunkHeight, this.image, target_image, atomicResult);
+                workers[i] = new MSEWorker(i, i*chunkHeight, targetImage.getHeight(), this.image, targetImage, fitnessResult, true);
             }
             else {
-                workers[i] = new MSEWorker(i, i*chunkHeight, i*chunkHeight + chunkHeight, this.image, target_image, atomicResult);
-                workers[i].start();
+                workers[i] = new MSEWorker(i, i*chunkHeight, i*chunkHeight + chunkHeight, this.image, targetImage, fitnessResult, false);
             }
+            workers[i].start();
         }
 
         for (int i = 0; i < threads; i++) {
@@ -72,7 +87,12 @@ public class Image {
                 e.printStackTrace();
             }
         }
-        this.fitness = atomicResult.floatValue();*/
+        this.fitness = fitnessResult.floatValue();
+    }
+
+    private void calculateFitnessSequential(BufferedImage targetImage) {
+        MSESingle mse = new MSESingle();
+        this.fitness = mse.ImageMSE(this.image, targetImage);
     }
 
     /**
@@ -142,8 +162,11 @@ public class Image {
                 int p3_pos_y = (int) (Math.random() * height);
 
                 int gray_shade = (int)(Math.random() * 255);
-                int alpha = (int)(Math.random() * 100);
                 Color color = new Color(gray_shade, gray_shade, gray_shade);
+                if (Config.useAlphaColors) {
+                    int alpha = (int) (Math.random() * 100);
+                    color = new Color(gray_shade, gray_shade, gray_shade, alpha);
+                }
 
                 fragments[i] = new TriangleFragment(new Point(p1_pos_x, p1_pos_y), new Point(p2_pos_x, p2_pos_y), new Point(p3_pos_x, p3_pos_y), color);
             }

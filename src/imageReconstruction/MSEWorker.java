@@ -1,6 +1,12 @@
+package imageReconstruction;
+
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.IntUnaryOperator;
+import java.util.function.LongUnaryOperator;
 
 public class MSEWorker extends Thread {
     int id;
@@ -8,27 +14,29 @@ public class MSEWorker extends Thread {
     int end;
     BufferedImage srcImage;
     BufferedImage targetImage;
-    float[] result;
+    AtomicLong result;
+    boolean last;
 
-    public MSEWorker(int id, int start, int end, BufferedImage srcImage, BufferedImage targetImage, float[] result) {
+    public MSEWorker(int id, int start, int end, BufferedImage srcImage, BufferedImage targetImage, AtomicLong result, boolean last) {
         this.id = id;
         this.start = start;
         this.end = end;
         this.srcImage = srcImage;
         this.targetImage = targetImage;
         this.result = result;
+        this.last = last;
     }
 
     @Override
     public void run() {
-        calculateImageMSE(id, start, end, srcImage, targetImage, result);
+        calculateImageMSE(id, start, end, srcImage, targetImage, result, last);
     }
 
-    public synchronized void calculateImageMSE(int id, int start, int end, BufferedImage srcImage, BufferedImage targetImage, float[] result) {
+    public synchronized void calculateImageMSE(int id, int start, int end, BufferedImage srcImage, BufferedImage targetImage, AtomicLong result, boolean last) {
         if (srcImage.getHeight() != targetImage.getHeight() | srcImage.getWidth() != targetImage.getWidth()) {
             throw new Error("Images should be equal in size");
         }
-        int tmp = 0;
+        long chunkTmp = 0;
         for (int i = start; i < end; i++) {
             for (int j = 0; j < srcImage.getWidth(); j++) {
                 Color srcPixelColor = new Color(srcImage.getRGB(i, j));
@@ -50,10 +58,15 @@ public class MSEWorker extends Thread {
                 int diffB_sq = (int) Math.pow(diffB, 2d);
 
                 int r = (diffR_sq + diffG_sq + diffB_sq) ;
-                tmp += r;
+                chunkTmp += r;
             }
         }
-        result[id] = tmp / (float)(3 * srcImage.getHeight() * srcImage.getWidth());
+        result.getAndAdd(chunkTmp);
+        if (this.last) {
+            result.getAndUpdate(devide);
+        }
     }
+
+    private LongUnaryOperator devide = a -> a / (3 * srcImage.getWidth() * srcImage.getHeight());
 
 }

@@ -1,3 +1,5 @@
+package imageReconstruction;
+
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
@@ -30,9 +32,9 @@ public class Population {
         this.target_image = target_image;
         this.population = new ArrayList<>();
         this.selectionPool = new ArrayList<>();
-        this.maxFitness = 0.0f;
-        this.minFitness = Float.MAX_VALUE;
-        this.averageFitness = 0.0f;
+        this.maxFitness = 0;
+        this.minFitness = Integer.MAX_VALUE;
+        this.averageFitness = 0;
 
         this.totalScore = 0;
 
@@ -58,7 +60,7 @@ public class Population {
 
         sortSelectionPool();
 
-        int score = 0;
+/*        int score = 0;
         for (int i = selectionPool.size() - 1; i > 0; i--) {
             selectionPool.get(i).fitnessScore = score;
             score += 1;
@@ -68,6 +70,8 @@ public class Population {
         for (int i = 0; i < population.size(); i++) {
             totalScore += population.get(i).fitnessScore;
         }
+
+ */
         updateFitnessData();
     }
 
@@ -85,10 +89,10 @@ public class Population {
             Image parentA = best.get(a);
             Image parentB = best.get(b);
 
-            // Image parentA = pickParent();
-            // Image parentB = pickParent();
+            // imageReconstruction.Image parentA = pickParent();
+            // imageReconstruction.Image parentB = pickParent();
 
-            Image child = parentA.uniformCrossover(parentB);
+            Image child = parentA.onePointCrossover(parentB);
             child.mutateOriginal(mutationRate);
             child.generateImage();
             this.population.set(i, child);
@@ -107,9 +111,9 @@ public class Population {
     }
 
     private void sortSelectionPool() {
-        Collections.sort(selectionPool, new Comparator<Image>() {
+        selectionPool.sort(new Comparator<Image>() {
             public int compare(Image img1, Image img2) {
-                return Float.valueOf(img2.fitness).compareTo(Float.valueOf(img1.fitness));
+                return Float.compare(img2.fitness, img1.fitness);
             }
         });
     }
@@ -139,7 +143,6 @@ public class Population {
         for (int i = 0; i < population.size(); i++) {
             total += population.get(i).fitness;
         }
-        //System.out.println(total);
         this.averageFitness = (total / population.size());
     }
 

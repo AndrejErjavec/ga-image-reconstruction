@@ -1,3 +1,5 @@
+package imageReconstruction;
+
 import javax.swing.*;
 import java.awt.*;
 

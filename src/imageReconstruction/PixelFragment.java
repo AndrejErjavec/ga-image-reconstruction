@@ -1,3 +1,5 @@
+package imageReconstruction;
+
 import java.awt.*;
 
 public class PixelFragment {

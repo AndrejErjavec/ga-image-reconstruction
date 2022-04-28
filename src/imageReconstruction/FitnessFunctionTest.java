@@ -1,9 +1,10 @@
+package imageReconstruction;
+
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 public class FitnessFunctionTest {
     public static void main(String[] args) {
@@ -35,18 +36,19 @@ public class FitnessFunctionTest {
          * PARALLEL
          -----------*/
 
+        AtomicLong resultParallel = new AtomicLong(0);
+
         startTime = System.currentTimeMillis();
         int threads = Runtime.getRuntime().availableProcessors();
         int chunkHeight = srcImage.getHeight() / threads;
-        float[] resultArrayParallel = new float[threads];
 
         MSEWorker[] workers = new MSEWorker[threads];
         for (int i = 0; i < threads; i++) {
             if (i == threads - 1) {
-                workers[i] = new MSEWorker(i, i*chunkHeight, srcImage.getHeight(), srcImage, targetImage, resultArrayParallel);
+                workers[i] = new MSEWorker(i, i*chunkHeight, srcImage.getHeight(), srcImage, targetImage, resultParallel, true);
             }
             else {
-                workers[i] = new MSEWorker(i, i*chunkHeight, i*chunkHeight + chunkHeight, srcImage, targetImage, resultArrayParallel);
+                workers[i] = new MSEWorker(i, i*chunkHeight, i*chunkHeight + chunkHeight, srcImage, targetImage, resultParallel, false);
             }
             workers[i].start();
         }
@@ -59,16 +61,10 @@ public class FitnessFunctionTest {
             }
         }
 
-        float resultP = 0;
-        for (int i = 0; i < resultArrayParallel.length; i++) {
-            resultP += resultArrayParallel[i];
-        }
-
         endTime = System.currentTimeMillis();
 
         System.out.println("PARALLEL");
-        System.out.println("Result: " + resultP);
+        System.out.println("Result: " + resultParallel);
         System.out.println("Time taken: " + (endTime - startTime) + "ms");
-        System.out.println("Result array: " + Arrays.toString(resultArrayParallel));
     }
 }

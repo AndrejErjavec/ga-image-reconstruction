@@ -1,8 +1,8 @@
-import javax.swing.*;
+package imageReconstruction;
+
 import java.awt.*;
 import java.awt.image.BufferStrategy;
 import java.awt.image.BufferedImage;
-import java.util.Arrays;
 
 public class ImageReconstruction {
         private final int population_size;
@@ -52,6 +52,7 @@ public class ImageReconstruction {
             current_generation++;
         }
         endTime = System.currentTimeMillis();
+        // population.exportEndResult();
         endMessage();
     }
 
@@ -109,20 +110,19 @@ public class ImageReconstruction {
         System.out.println("----------------------------------");
         System.out.println("LOCAL MAXIMUM REACHED");
         System.out.println("Evolution finished in generation: " + current_generation);
-        System.out.println("Best image fitness: " + Math.round(population.bestFittingImage.fitness * 100) / 100d);
+        System.out.println("Best image fitness: " + population.bestFittingImage.fitness);
         System.out.println("Average fitness: " + population.averageFitness);
         System.out.println();
         long time_taken = endTime - startTime;
-        System.out.println("Time taken to complete: " + miliSecondsToMinutes(time_taken));
+        System.out.println("Time taken to complete: " + printTime(time_taken));
         System.out.println("----------------------------------");
-        population.exportEndResult();
     }
 
-    private String miliSecondsToMinutes(long ms) {
+    private String printTime(long ms) {
         long seconds = ms / 1000;
         long m = seconds / 60;
         long s = seconds % 60;
-        return m + ":" + s;
+        return m + "min " + s + "s";
     }
 
 }

@@ -1,3 +1,5 @@
+package imageReconstruction;
+
 import java.awt.*;
 import java.awt.image.BufferedImage;
 
@@ -32,5 +34,4 @@ public class MSESingle {
         }
         return diff / (float) (3 * srcImage.getHeight() * srcImage.getWidth());
     }
-
 }
