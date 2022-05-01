@@ -43,7 +43,7 @@ public class ImageReconstruction {
         startTime = System.currentTimeMillis();
         start();
         init();
-        while (running && current_generation <= max_generations && noImprovementCount < 200) {
+        while (running && current_generation <= max_generations && noImprovementCount < 200 && current_generation < 501) {
             population.naturalSelection();
             population.generateNewPopulation();
             checkImprovement();
@@ -101,7 +101,6 @@ public class ImageReconstruction {
         System.out.println("Best image fitness: " + Math.round(population.bestFittingImage.fitness * 100) / 100d);
         // System.out.println("Max fitness: " + population.maxFitness);
         System.out.println("Average fitness: " + population.averageFitness);
-        //System.out.println("Fitness span: " + (population.maxFitness - population.minFitness));
         System.out.println("----------------------------------");
     }
 

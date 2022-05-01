@@ -10,8 +10,11 @@ public class Config {
     static int MAX_GENERATIONS;
     static RunMode runMode;
     static boolean useAlphaColors;
+    static int threads;
 
-    public Config() {}
+    public Config() {
+        this.threads = Runtime.getRuntime().availableProcessors();
+    }
 
     public void setConfig(RunMode runMode, boolean useAlphaColors) {
         Config.runMode = runMode;

@@ -14,7 +14,7 @@ public class Image {
     int fragment_count;
     TriangleFragment[] fragments;
     BufferedImage image;
-    float fitness;
+    long fitness;
     int fitnessScore;
 
     public Image(int width, int height, int fragment_count) {
@@ -57,25 +57,28 @@ public class Image {
         switch (Config.runMode) {
             case SEQUENTIAL:
                 calculateFitnessSequential(target_image);
+                break;
             case PARALLEL:
                 calculateFitnessParallel(target_image);
+                break;
             case DISTRIBUTED:
-                calculateFitnessSequential(target_image);
+                System.out.println("distributed not defined");
+                break;
         }
     }
 
     private void calculateFitnessParallel(BufferedImage targetImage) {
-        int threads = Runtime.getRuntime().availableProcessors();
+        int threads = Config.threads;
         int chunkHeight = height / threads;
         AtomicLong fitnessResult = new AtomicLong(0);
         MSEWorker[] workers = new MSEWorker[threads];
 
         for (int i = 0; i < threads; i++) {
             if (i == threads - 1) {
-                workers[i] = new MSEWorker(i, i*chunkHeight, targetImage.getHeight(), this.image, targetImage, fitnessResult, true);
+                workers[i] = new MSEWorker(i*chunkHeight, targetImage.getHeight(), this.image, targetImage, fitnessResult, true);
             }
             else {
-                workers[i] = new MSEWorker(i, i*chunkHeight, i*chunkHeight + chunkHeight, this.image, targetImage, fitnessResult, false);
+                workers[i] = new MSEWorker(i*chunkHeight, i*chunkHeight + chunkHeight, this.image, targetImage, fitnessResult, false);
             }
             workers[i].start();
         }
@@ -87,12 +90,14 @@ public class Image {
                 e.printStackTrace();
             }
         }
-        this.fitness = fitnessResult.floatValue();
+        this.fitness = fitnessResult.longValue() / (3L * image.getWidth() * image.getHeight());
+        // System.out.println("Image result: " + this.fitness);
     }
 
     private void calculateFitnessSequential(BufferedImage targetImage) {
         MSESingle mse = new MSESingle();
         this.fitness = mse.ImageMSE(this.image, targetImage);
+        // System.out.println(this.fitness);
     }
 
     /**

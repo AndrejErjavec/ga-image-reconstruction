@@ -10,41 +10,30 @@ public class Population {
     public int size;
     public ArrayList<Image> population;
     public float mutationRate;
-    public BufferedImage target_image;
-    public int image_fragments;
-    public ArrayList<Image> selectionPool;
+    public BufferedImage targetImage;
+    public int imageFragments;
 
-    public float maxFitness;
-    public float minFitness;
-    public float averageFitness;
     public Image bestFittingImage;
+    public float averageFitness;
 
+    public ArrayList<Image> selectionPool;
     private int totalScore;
 
-    private int image_width;
-    private int image_height;
 
-
-    public Population(int size, int image_fragments, float mutationRate, BufferedImage target_image) {
+    public Population(int size, int imageFragments, float mutationRate, BufferedImage targetImage) {
         this.size = size;
-        this.image_fragments = image_fragments;
+        this.imageFragments = imageFragments;
         this.mutationRate = mutationRate;
-        this.target_image = target_image;
+        this.targetImage = targetImage;
         this.population = new ArrayList<>();
         this.selectionPool = new ArrayList<>();
-        this.maxFitness = 0;
-        this.minFitness = Integer.MAX_VALUE;
         this.averageFitness = 0;
-
         this.totalScore = 0;
-
-        this.image_width = target_image.getWidth();
-        this.image_height = target_image.getHeight();
     }
 
     public void initialize() {
         for (int i = 0; i < this.size; i++) {
-            Image image = new Image(image_width, image_height, image_fragments);
+            Image image = new Image(targetImage.getWidth(), targetImage.getHeight(), imageFragments);
             population.add(image);
         }
         this.bestFittingImage = population.get(0);
@@ -53,31 +42,56 @@ public class Population {
     public void naturalSelection() {
         // System.out.println("Performing natural selection...");
         selectionPool.clear();
-        for (int i = 0; i < population.size(); i++) {
-            population.get(i).calculateFitness(target_image);
-            selectionPool.add(population.get(i));
+        switch (Config.runMode) {
+            case SEQUENTIAL:
+                calculateFitnessSequential();
+                break;
+            case PARALLEL:
+                calculateFitnessParallel();
+                selectionPool.addAll(population);
+                break;
+            case DISTRIBUTED:
+                System.out.println("Distributed mode is not defined yet");
+                break;
         }
 
         sortSelectionPool();
-
-/*        int score = 0;
-        for (int i = selectionPool.size() - 1; i > 0; i--) {
-            selectionPool.get(i).fitnessScore = score;
-            score += 1;
-        }
-
-        totalScore = 0;
-        for (int i = 0; i < population.size(); i++) {
-            totalScore += population.get(i).fitnessScore;
-        }
-
- */
         updateFitnessData();
+    }
+
+    private void calculateFitnessSequential() {
+        for (int i = 0; i < population.size(); i++) {
+            population.get(i).calculateFitness(targetImage);
+        }
+        selectionPool.addAll(population);
+    }
+
+    private void calculateFitnessParallel() {
+        int threads = Config.threads;
+        int chunkHeight = population.size() / threads;
+
+        MSEWorker[] workers = new MSEWorker[threads];
+        for (int i = 0; i < threads; i++) {
+            if (i == threads - 1) {
+                workers[i] = new MSEWorker(i*chunkHeight, population.size(), population, targetImage);
+            }
+            else {
+                workers[i] = new MSEWorker(i*chunkHeight, i*chunkHeight + chunkHeight, population, targetImage);
+            }
+            workers[i].start();
+        }
+
+        for (int i = 0; i < threads; i++) {
+            try {
+                workers[i].join();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     public void generateNewPopulation() {
         // System.out.println("Generating new population...");
-
         ArrayList<Image> best = new ArrayList<>();
         for (int i = 0; i < population.size() / 10; i++) {
             best.add(selectionPool.get(i));
@@ -89,9 +103,6 @@ public class Population {
             Image parentA = best.get(a);
             Image parentB = best.get(b);
 
-            // imageReconstruction.Image parentA = pickParent();
-            // imageReconstruction.Image parentB = pickParent();
-
             Image child = parentA.onePointCrossover(parentB);
             child.mutateOriginal(mutationRate);
             child.generateImage();
@@ -99,6 +110,7 @@ public class Population {
         }
     }
 
+    // not used
     private Image pickParent() {
         int i = 0;
         double ts = Math.random() * totalScore;
@@ -118,34 +130,19 @@ public class Population {
         });
     }
 
-    public void updateFitnessData() {
-        // reset max and min fitness values for current generation
-        maxFitness = 0.0f;
-        minFitness = Float.MAX_VALUE;
+    private void updateFitnessData() {
         // get best fitting image
         if (selectionPool.get(0).fitness > bestFittingImage.fitness) {
             this.bestFittingImage = selectionPool.get(0);
         }
-        // get max fitness value
-        if (selectionPool.get(0).fitness > maxFitness) {
-            this.maxFitness = bestFittingImage.fitness;
-        }
-        // get min fitness value
-        if (selectionPool.get(selectionPool.size() - 1).fitness < minFitness) {
-            this.minFitness = selectionPool.get(selectionPool.size() - 1).fitness;
-        }
         // get average fitness
-        getAverageFitness();
-    }
-
-    private void getAverageFitness() {
         float total = 0.0f;
         for (int i = 0; i < population.size(); i++) {
             total += population.get(i).fitness;
         }
         this.averageFitness = (total / population.size());
     }
-
+    
     public void draw(Graphics g) {
         // System.out.println("Drawing best image...");
         Image image = bestFittingImage;
