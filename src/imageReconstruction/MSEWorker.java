@@ -15,7 +15,7 @@ public class MSEWorker extends Thread {
     BufferedImage srcImage;
     BufferedImage targetImage;
     ArrayList<Image> srcImages;
-    AtomicLong result;
+    AtomicReference<Float> result;
     boolean last;
 
     /**
@@ -27,7 +27,7 @@ public class MSEWorker extends Thread {
      * @param result - Atomic variable for adding chunk results to
      * @param last - is this the last thread
      */
-    public MSEWorker(int start, int end, BufferedImage srcImage, BufferedImage targetImage, AtomicLong result, boolean last) {
+    public MSEWorker(int start, int end, BufferedImage srcImage, BufferedImage targetImage, AtomicReference<Float> result, boolean last) {
         this.start = start;
         this.end = end;
         this.srcImage = srcImage;
@@ -61,7 +61,7 @@ public class MSEWorker extends Thread {
     public void calculateImageMSEPerImage(int start, int end, ArrayList<Image> srcImages, BufferedImage targetImage) {
         for (int k = start; k < end; k++) {
             Image img = srcImages.get(k);
-            long fitness = 0;
+            float fitness = 0.0f;
             for (int i = 0; i < img.image.getHeight(); i++) {
                 for (int j = 0; j < img.image.getWidth(); j++) {
                     Color srcPixelColor = new Color(img.image.getRGB(i, j));
@@ -85,7 +85,7 @@ public class MSEWorker extends Thread {
                     fitness += (diffR_sq + diffG_sq + diffB_sq);
                 }
             }
-            fitness = fitness / (3L * img.image.getHeight() * img.image.getWidth());
+            fitness = fitness / (3 * img.image.getHeight() * img.image.getWidth());
             img.fitness = fitness;
         }
     }

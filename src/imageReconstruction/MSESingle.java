@@ -4,11 +4,11 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 
 public class MSESingle {
-    public long ImageMSE(BufferedImage srcImage, BufferedImage targetImage) {
+    public float ImageMSE(BufferedImage srcImage, BufferedImage targetImage) {
         if (srcImage.getHeight() != targetImage.getHeight() | srcImage.getWidth() != targetImage.getWidth()) {
             throw new Error("Images should be equal in size");
         }
-        long diff = 0;
+        float diff = 0;
         for (int i = 0; i < srcImage.getHeight(); i++) {
             for (int j = 0; j < srcImage.getWidth(); j++) {
                 Color srcPixelColor = new Color(srcImage.getRGB(i, j));

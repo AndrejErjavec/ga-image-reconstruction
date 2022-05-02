@@ -5,7 +5,8 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReference;
+
 import imageReconstruction.Config;
 
 public class Image {
@@ -14,7 +15,7 @@ public class Image {
     int fragment_count;
     TriangleFragment[] fragments;
     BufferedImage image;
-    long fitness;
+    float fitness;
     int fitnessScore;
 
     public Image(int width, int height, int fragment_count) {
@@ -27,7 +28,7 @@ public class Image {
     private void initialize() {
         this.image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
         this.fragments = new TriangleFragment[fragment_count];
-        this.fitness = 0;
+        this.fitness = 0.0f;
         this.fitnessScore = 0;
 
         for (int i = 0; i < fragment_count; i++) {
@@ -53,24 +54,16 @@ public class Image {
         generateImage();
     }
 
-    public void calculateFitness(BufferedImage target_image) {
-        switch (Config.runMode) {
-            case SEQUENTIAL:
-                calculateFitnessSequential(target_image);
-                break;
-            case PARALLEL:
-                calculateFitnessParallel(target_image);
-                break;
-            case DISTRIBUTED:
-                System.out.println("distributed not defined");
-                break;
-        }
+    public void calculateFitnessSequential(BufferedImage targetImage) {
+        MSESingle mse = new MSESingle();
+        this.fitness = mse.ImageMSE(this.image, targetImage);
+        // System.out.println(this.fitness);
     }
 
-    private void calculateFitnessParallel(BufferedImage targetImage) {
+/*    private void calculateFitnessParallel(BufferedImage targetImage) {
         int threads = Config.threads;
         int chunkHeight = height / threads;
-        AtomicLong fitnessResult = new AtomicLong(0);
+        AtomicReference<Float> fitnessResult = new AtomicReference<Float>(0.0f);
         MSEWorker[] workers = new MSEWorker[threads];
 
         for (int i = 0; i < threads; i++) {
@@ -90,15 +83,11 @@ public class Image {
                 e.printStackTrace();
             }
         }
-        this.fitness = fitnessResult.longValue() / (3L * image.getWidth() * image.getHeight());
+        this.fitness = fitnessResult.get() / (3 * image.getWidth() * image.getHeight());
         // System.out.println("Image result: " + this.fitness);
     }
 
-    private void calculateFitnessSequential(BufferedImage targetImage) {
-        MSESingle mse = new MSESingle();
-        this.fitness = mse.ImageMSE(this.image, targetImage);
-        // System.out.println(this.fitness);
-    }
+ */
 
     /**
      * CROSSOVER METHODS:

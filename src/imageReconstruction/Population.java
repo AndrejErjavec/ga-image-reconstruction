@@ -61,7 +61,7 @@ public class Population {
 
     private void calculateFitnessSequential() {
         for (int i = 0; i < population.size(); i++) {
-            population.get(i).calculateFitness(targetImage);
+            population.get(i).calculateFitnessSequential(targetImage);
         }
         selectionPool.addAll(population);
     }

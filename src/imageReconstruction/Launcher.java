@@ -9,7 +9,7 @@ public class Launcher {
     public static void main(String[] args) {
         String IMAGE_PATH = new File("images/monalisa.gif").getAbsolutePath();
         int POPULATION_SIZE = 200;
-        int IMAGE_FRAGMENTS = 100;
+        int IMAGE_FRAGMENTS = 500;
         float MUTATION_RATE = 0.02f;
         int MAX_GENERATIONS = 10000;
         boolean useAlphaColors = false;

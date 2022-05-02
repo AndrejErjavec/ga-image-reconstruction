@@ -34,7 +34,7 @@ public class FitnessFunctionTest {
         long startTime = System.currentTimeMillis();
         for (int i = 0; i < images.size(); i++) {
             MSESingle mseSingle = new MSESingle();
-            long resultSequential = mseSingle.ImageMSE(images.get(i).image, targetImage);
+            float resultSequential = mseSingle.ImageMSE(images.get(i).image, targetImage);
             images.get(i).fitness = resultSequential;
         }
         long endTime = System.currentTimeMillis();
