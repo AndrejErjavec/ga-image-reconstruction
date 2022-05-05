@@ -51,7 +51,8 @@ public class Population {
                 selectionPool.addAll(population);
                 break;
             case DISTRIBUTED:
-                System.out.println("Distributed mode is not defined yet");
+                calculateFitnessDistributed();
+                selectionPool.addAll(population);
                 break;
         }
 
@@ -88,6 +89,11 @@ public class Population {
                 e.printStackTrace();
             }
         }
+    }
+
+    private void calculateFitnessDistributed() {
+        MSEDistributed msd = new MSEDistributed(population, targetImage);
+        msd.start();
     }
 
     public void generateNewPopulation() {

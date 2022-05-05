@@ -1,5 +1,7 @@
 package imageReconstruction;
 
+import mpi.MPI;
+
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -8,15 +10,17 @@ import java.io.IOException;
 public class Launcher {
     public static void main(String[] args) {
         String IMAGE_PATH = new File("images/monalisa.gif").getAbsolutePath();
-        int POPULATION_SIZE = 200;
-        int IMAGE_FRAGMENTS = 500;
+        int POPULATION_SIZE = 300;
+        int IMAGE_FRAGMENTS = 200;
         float MUTATION_RATE = 0.02f;
         int MAX_GENERATIONS = 10000;
         boolean useAlphaColors = false;
-        RunMode runMode = RunMode.PARALLEL;
+        RunMode runMode = RunMode.DISTRIBUTED;
 
         Config conf = new Config();
         conf.setConfig(runMode, useAlphaColors);
+
+        MPI.Init(args);
 
         BufferedImage TARGET_IMAGE = null;
         try {

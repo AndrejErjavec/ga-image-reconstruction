@@ -61,7 +61,7 @@ public class MSEWorker extends Thread {
     public void calculateImageMSEPerImage(int start, int end, ArrayList<Image> srcImages, BufferedImage targetImage) {
         for (int k = start; k < end; k++) {
             Image img = srcImages.get(k);
-            float fitness = 0.0f;
+            float diff = 0.0f;
             for (int i = 0; i < img.image.getHeight(); i++) {
                 for (int j = 0; j < img.image.getWidth(); j++) {
                     Color srcPixelColor = new Color(img.image.getRGB(i, j));
@@ -82,11 +82,11 @@ public class MSEWorker extends Thread {
                     int diffG_sq = (int) Math.pow(diffG, 2d);
                     int diffB_sq = (int) Math.pow(diffB, 2d);
 
-                    fitness += (diffR_sq + diffG_sq + diffB_sq);
+                    diff += (diffR_sq + diffG_sq + diffB_sq);
                 }
             }
-            fitness = fitness / (3 * img.image.getHeight() * img.image.getWidth());
-            img.fitness = fitness;
+            diff = diff / (3 * img.image.getHeight() * img.image.getWidth());
+            img.fitness = diff;
         }
     }
 

@@ -60,14 +60,14 @@ public class ImageReconstruction {
      * HELPER FUNCTIONS
      */
     private void checkImprovement() {
-            if (this.lastBestFitness == population.bestFittingImage.fitness) {
-                this.noImprovementCount ++;
-            }
-            else if (this.lastBestFitness < population.bestFittingImage.fitness) {
-                this.lastBestFitness = population.bestFittingImage.fitness;
-                this.noImprovementCount = 0;
-            }
+        if (this.lastBestFitness == population.bestFittingImage.fitness) {
+            this.noImprovementCount ++;
         }
+        else if (this.lastBestFitness < population.bestFittingImage.fitness) {
+            this.lastBestFitness = population.bestFittingImage.fitness;
+            this.noImprovementCount = 0;
+        }
+    }
 
     private void start() {
         if (!running) running = true;
