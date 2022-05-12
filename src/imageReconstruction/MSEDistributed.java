@@ -31,7 +31,7 @@ public class MSEDistributed {
         // size of array of target image
         int[] targetImageArraySize = new int[1];
         // number of pixels in an image
-        int[] imageChunk = new int[1];
+        int[] imageSize = new int[1];
 
         if (id == 0) {
             // first PC
@@ -39,7 +39,7 @@ public class MSEDistributed {
             targetImageArray = targetImage.getRGB(0, 0, targetImage.getWidth(), targetImage.getHeight(), null, 0, targetImage.getWidth());
             srcImagesArraySize[0] = srcImagesArray.length;
             targetImageArraySize[0] = targetImageArray.length;
-            imageChunk[0] = srcImages.get(0).width * srcImages.get(0).height;
+            imageSize[0] = srcImages.get(0).width * srcImages.get(0).height;
 
             System.out.println("srcImagesArraySize: " + srcImagesArraySize[0]);
             System.out.println("targetImageArraySize: " + targetImageArraySize[0]);
@@ -71,23 +71,31 @@ public class MSEDistributed {
         // broadcast target image array
         MPI.COMM_WORLD.Bcast(targetImageArray, 0, targetImageArraySize[0], MPI.INT, 0);
         // broadcast image chunk size (number of pixels in an image)
-        MPI.COMM_WORLD.Bcast(imageChunk, 0, 1, MPI.INT, 0);
+        MPI.COMM_WORLD.Bcast(imageSize, 0, 1, MPI.INT, 0);
 
         /**
          * DO TUKAJ DELA
+         * AVAILABLE VARIABLES:
+            * srcImagesArray
+            * targetImageArray
+            * srcImagesArraySize
+            * targetImageArraySize
+            * imageSize
          */
 
         // int chunk = new int[vseh pikslov / pikslov na sliko / size]
-        int[] chunk = new int[(srcImagesArraySize[0] / imageChunk[0] / size) * imageChunk[0]];
+        int[] chunk = new int[(srcImagesArraySize[0] / imageSize[0] / size) * imageSize[0]];
         System.out.println("chunk size: " + chunk);
         // MPI.COMM_WORLD.Scatter(targetImageArray, 0, chunk.length, MPI.INT, chunk, 0, chunk.length, MPI.INT, 0);
         MPI.COMM_WORLD.Scatter(srcImagesArray, 0, chunk.length, MPI.INT, chunk, 0, chunk.length, MPI.INT,0);
+        
+        int imagesPerChunk = chunk.length / imageSize[0];
 
-        for (int k = 0; k < chunk.length; k++) {
-            Image img = srcImages.get(k);
+        for (int k = 0; k < imagesPerChunk; k++) {
+            // Image img = srcImages.get(k);
             float diff = 0.0f;
             int index = 0;
-            for (int i = 0; i < srcImages.get(0).height; i++) {
+            for (int i = 0; i < imageSize[0]; i++) {
                 for (int j = 0; j < srcImages.get(0).width; j++) {
                     Color srcPixelColor = new Color(img.image.getRGB(i, j));
                     int srcPixelR = srcPixelColor.getRed();
