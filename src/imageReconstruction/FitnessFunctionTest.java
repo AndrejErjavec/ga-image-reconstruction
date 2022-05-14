@@ -46,7 +46,7 @@ public class FitnessFunctionTest {
             long endTime = System.currentTimeMillis();
 
             System.out.println("SEQUENTIAL");
-            System.out.println("Time taken: " + (endTime - startTime) + "ms");
+            // System.out.println("Time taken: " + (endTime - startTime) + "ms");
             printFitnesses(images);
             System.out.println("------------------------");
 
@@ -83,7 +83,7 @@ public class FitnessFunctionTest {
             endTime = System.currentTimeMillis();
 
             System.out.println("PARALLEL");
-            System.out.println("Time taken: " + (endTime - startTime) + "ms");
+            // System.out.println("Time taken: " + (endTime - startTime) + "ms");
             printFitnesses(images);
             System.out.println("------------------------");
         }
