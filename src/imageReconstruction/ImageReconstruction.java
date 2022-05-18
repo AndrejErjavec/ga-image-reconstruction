@@ -1,5 +1,7 @@
 package imageReconstruction;
 
+import mpi.MPI;
+
 import java.awt.*;
 import java.awt.image.BufferStrategy;
 import java.awt.image.BufferedImage;
@@ -9,8 +11,8 @@ public class ImageReconstruction {
         private final int image_fragments;
         private final float mutation_rate;
         private final int max_generations;
-        public int current_generation;
-        private int noImprovementCount;
+        public int current_generation = 1;
+        private int noImprovementCount = 0;
 
         private boolean running = false;
 
@@ -31,18 +33,17 @@ public class ImageReconstruction {
             this.mutation_rate = mutation_rate;
             this.max_generations = max_generations;
             this.target_image = target_image;
-            this.current_generation = 1;
-            this.noImprovementCount = 0;
-            this.lastBestFitness = 0;
         }
 
     /**
      * PROGRAM RUNS HERE
      */
+
+    int id = MPI.COMM_WORLD.Rank();
     public void run() {
         startTime = System.currentTimeMillis();
-        start();
         init();
+        start();
         while (running && current_generation <= max_generations && noImprovementCount < 200 && current_generation < 501) {
             population.naturalSelection();
             population.generateNewPopulation();
@@ -74,26 +75,29 @@ public class ImageReconstruction {
     }
 
     private void init() {
-        display = new Display("Canvas", target_image.getWidth(), target_image.getHeight());
-        population = new Population(population_size, image_fragments, mutation_rate, target_image);
-        population.initialize();
-        running = true;
+        if (id == 0) {
+            display = new Display("Canvas", target_image.getWidth(), target_image.getHeight());
+            population = new Population(population_size, image_fragments, mutation_rate, target_image);
+            population.initialize();
+        }
     }
 
     public void draw() {
-        bs = display.getCanvas().getBufferStrategy();
-        if(bs == null) {
-            display.getCanvas().createBufferStrategy(3);
-            draw();
-        }
+        if (id == 0) {
+            bs = display.getCanvas().getBufferStrategy();
+            if(bs == null) {
+                display.getCanvas().createBufferStrategy(3);
+                draw();
+            }
 
-        g = bs.getDrawGraphics();
-        // drawing starts
-        g.clearRect(0, 0, target_image.getWidth(), target_image.getHeight());
-        population.draw(g);
-        // drawing ends
-        bs.show();
-        g.dispose();
+            g = bs.getDrawGraphics();
+            // drawing starts
+            g.clearRect(0, 0, target_image.getWidth(), target_image.getHeight());
+            population.draw(g);
+            // drawing ends
+            bs.show();
+            g.dispose();
+        }
     }
 
     private void print() {

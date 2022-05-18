@@ -15,11 +15,17 @@ public class MSESingle {
                 int srcPixelR = srcPixelColor.getRed();
                 int srcPixelG = srcPixelColor.getGreen();
                 int srcPixelB = srcPixelColor.getBlue();
+                /*if ((i*j+j) < 10) {
+                    System.out.println("RGB src: " + srcPixelR + ", " + srcPixelG + ", " + srcPixelB);
+                }*/
 
                 Color targetPixelColor = new Color(targetImage.getRGB(i, j));
                 int targetPixelR = targetPixelColor.getRed();
                 int targetPixelG = targetPixelColor.getGreen();
                 int targetPixelB = targetPixelColor.getBlue();
+                /*if (i == 0 && j < 10) {
+                    System.out.println("RGB target: " + targetPixelR + ", " + targetPixelG + ", " + targetPixelB);
+                }*/
 
                 int diffR = 255 - Math.abs(srcPixelR - targetPixelR);
                 int diffG = 255 - Math.abs(srcPixelG - targetPixelG);

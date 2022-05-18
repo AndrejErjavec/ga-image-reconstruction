@@ -25,6 +25,12 @@ public class Image {
         this.initialize();
     }
 
+    public Image(BufferedImage image) {
+        this.image = image;
+        this.width = image.getWidth();
+        this.height = image.getHeight();
+    }
+
     private void initialize() {
         this.image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
         this.fragments = new TriangleFragment[fragment_count];
@@ -188,7 +194,7 @@ public class Image {
 
     public void export() {
         try {
-            File imageExport = new File("result.png");
+            File imageExport = new File("image.png");
             ImageIO.write(this.image, "png", imageExport);
         }
         catch (IOException e){

@@ -21,7 +21,7 @@ public class MSEDistributed {
     public void start() {
         id = MPI.COMM_WORLD.Rank();
         size = MPI.COMM_WORLD.Size();
-        System.out.println("jaz sem "+id+" od "+size);
+        // System.out.println("jaz sem "+id+" od "+size);
 
         // array of values of RGB values for all images inside population
         int[] srcImagesArray = new int[0];
@@ -37,13 +37,19 @@ public class MSEDistributed {
         if (id == 0) {
             // first PC
             srcImagesArray = new int[srcImages.size() * srcImages.get(0).width * srcImages.get(0).height];
-            targetImageArray = targetImage.getRGB(0, 0, targetImage.getWidth(), targetImage.getHeight(), null, 0, targetImage.getWidth());
+            targetImageArray = new int[targetImage.getWidth() * targetImage.getHeight()];
             srcImagesArraySize[0] = srcImagesArray.length;
             targetImageArraySize[0] = targetImageArray.length;
             imageSize[0] = srcImages.get(0).width * srcImages.get(0).height;
 
-            // System.out.println("srcImagesArraySize: " + srcImagesArraySize[0]);
-            // System.out.println("targetImageArraySize: " + targetImageArraySize[0]);
+            // fill target images array with RGB values for each pixel on each image
+            int ind = 0;
+            for (int i = 0; i < targetImage.getHeight(); i++) {
+                for (int j = 0; j < targetImage.getWidth(); j++){
+                    targetImageArray[ind] = targetImage.getRGB(i, j);
+                    ind++;
+                }
+            }
 
             // fill src images array with RGB values for each pixel on each image
             int index = 0;
@@ -66,14 +72,12 @@ public class MSEDistributed {
 
         if (id != 0) {
             targetImageArray = new int[targetImageArraySize[0]];
-            srcImagesArray = new int[srcImagesArraySize[0]];
+            imageSize = new int[imageSize[0]];
         }
 
-        // broadcast src images array
-        MPI.COMM_WORLD.Bcast(srcImagesArray, 0, srcImagesArraySize[0], MPI.INT, 0);
         // broadcast target image array
         MPI.COMM_WORLD.Bcast(targetImageArray, 0, targetImageArraySize[0], MPI.INT, 0);
-        // broadcast image chunk size (number of pixels in an image)
+        // broadcast single image size
         MPI.COMM_WORLD.Bcast(imageSize, 0, 1, MPI.INT, 0);
 
         /**
@@ -90,6 +94,7 @@ public class MSEDistributed {
             * chunk
          */
 
+        // array with chunk sizes (in images) for each process
         int[] chunkSizes = new int[size];
         int imagesRemaining = srcImagesArraySize[0] / imageSize[0];
         int ci = 0;
@@ -100,6 +105,7 @@ public class MSEDistributed {
             ci++;
         }
 
+        // array with chunk sizes (in pixels) for each process
         int[] sendCount = new int[size];
         for (int i = 0; i < sendCount.length; i++) {
             sendCount[i] = chunkSizes[i] * imageSize[0];
@@ -107,26 +113,26 @@ public class MSEDistributed {
 
         int[] displacements = new int[size];
         displacements[0] = 0;
+        for (int i = 1; i < displacements.length; i++) {
+            displacements[i] = displacements[i-1] + sendCount[i-1];
+        }
 
         int[] chunk = new int[sendCount[id]];
 
-        /**
-         * DO TUKAJ DELA
-         */
-
-        // MPI.COMM_WORLD.Scatter(srcImagesArray, 0, chunkSize.length, MPI.INT, chunkSize, 0, chunkSize.length, MPI.INT,0);
         /**
          * scatters: srcImageArray
          * to: chunk of each process
          */
         MPI.COMM_WORLD.Scatterv(srcImagesArray, 0, sendCount, displacements, MPI.INT, chunk, 0, chunk.length, MPI.INT, 0);
 
-        int imagesPerChunk = chunk.length / imageSize[0];
+        int imagesPerChunk = chunkSizes[id]; // = chunk.length / imageSize[0];
         float[] chunkFitnesses = new float[imagesPerChunk];
 
         for (int i = 0; i < imagesPerChunk; i++) {
+
             float diff = 0.0f;
             int index = 0;
+
             for (int j = 0; j < imageSize[0]; j++) {
                 Color srcPixelColor = new Color(chunk[i*imageSize[0] + j]);
                 int srcPixelR = srcPixelColor.getRed();
@@ -149,22 +155,24 @@ public class MSEDistributed {
                 diff += (diffR_sq + diffG_sq + diffB_sq);
                 index++;
             }
-
             diff = diff / (3 * imageSize[0]);
-            System.out.println("Diff by " + id + ": " + diff);
             // fitness of one image
             chunkFitnesses[i] = diff;
         }
 
         float[] allImagesFitnesses = new float[srcImagesArraySize[0] / imageSize[0]];
 
-        //MPI.COMM_WORLD.Gather(chunkFitnesses, 0, imagesPerChunk.length, MPI.FLOAT, allImagesFitnesses, 0, imagesPerChunk.length, MPI.FLOAT, 0);
+        int[] displacementsGather = new int[size];
+        displacementsGather[0] = 0;
+        for (int i = 1; i < displacementsGather.length; i++) {
+            displacementsGather[i] = displacementsGather[i-1] + chunkSizes[i-1];
+        }
+
         /**
          * gathers: chunkFitnesses
          * to: allImageFitnesses
          */
-        MPI.COMM_WORLD.Gatherv(chunkFitnesses, 0, chunkFitnesses.length, MPI.FLOAT, allImagesFitnesses, 0, chunkSizes, chunkSizes, MPI.FLOAT, 0);
-        // MPI.COMM_WORLD.Gatherv(chunkFitnesses, 0, imagesPerChunk.length, MPI.FLOAT, allImagesFitnesses, 0, chunkSizes, displacements, MPI.FLOAT, 0);
+        MPI.COMM_WORLD.Gatherv(chunkFitnesses, 0, chunkFitnesses.length, MPI.FLOAT, allImagesFitnesses, 0, chunkSizes, displacementsGather, MPI.FLOAT, 0);
 
         // first thread assigns fitness values to all images
         if (id == 0) {

@@ -4,16 +4,15 @@ import mpi.MPI;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
-import java.sql.Array;
+import java.io.*;
 import java.util.ArrayList;
-import java.util.concurrent.atomic.AtomicLong;
+import java.util.Arrays;
 
 public class FitnessFunctionTest {
     private static int id;
     private static ArrayList<Image> images = new ArrayList<Image>();
     private static BufferedImage targetImage;
+    private static final int size = 5;
     public static void main(String[] args) {
         MPI.Init(args);
 
@@ -28,10 +27,16 @@ public class FitnessFunctionTest {
                 e.printStackTrace();
             }
 
-            for (int i = 0; i < 10; i++) {
-                Image img = new Image(128, 128, 100);
-                images.add(img);
+            for (int i = 0; i < size; i++) {
+                BufferedImage img = null;
+                try {
+                    img = ImageIO.read(new File("testImages/image" + i + ".png"));
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+                images.add(new Image(img));
             }
+
 
             /**------------
              * SEQUENTIAL
@@ -46,7 +51,7 @@ public class FitnessFunctionTest {
             long endTime = System.currentTimeMillis();
 
             System.out.println("SEQUENTIAL");
-            // System.out.println("Time taken: " + (endTime - startTime) + "ms");
+            System.out.println("Time taken: " + (endTime - startTime) + "ms");
             printFitnesses(images);
             System.out.println("------------------------");
 
@@ -83,7 +88,7 @@ public class FitnessFunctionTest {
             endTime = System.currentTimeMillis();
 
             System.out.println("PARALLEL");
-            // System.out.println("Time taken: " + (endTime - startTime) + "ms");
+            System.out.println("Time taken: " + (endTime - startTime) + "ms");
             printFitnesses(images);
             System.out.println("------------------------");
         }
@@ -109,4 +114,5 @@ public class FitnessFunctionTest {
     private static void printFitnesses(ArrayList<Image> images) {
         images.forEach(image -> System.out.println("Fitness: " + image.fitness));
     }
+
 }
