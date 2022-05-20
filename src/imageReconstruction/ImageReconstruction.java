@@ -35,26 +35,30 @@ public class ImageReconstruction {
             this.target_image = target_image;
         }
 
+        int id = MPI.COMM_WORLD.Rank();
+
     /**
      * PROGRAM RUNS HERE
      */
 
-    int id = MPI.COMM_WORLD.Rank();
     public void run() {
         startTime = System.currentTimeMillis();
         init();
         start();
-        while (running && current_generation <= max_generations && noImprovementCount < 200 && current_generation < 501) {
+        while (running && current_generation <= max_generations && noImprovementCount < 200) {
             population.naturalSelection();
             population.generateNewPopulation();
-            checkImprovement();
-            draw();
-            print();
+            if (id == 0) {
+                checkImprovement();
+                draw();
+                print();
+            }
             current_generation++;
         }
         endTime = System.currentTimeMillis();
-        // population.exportEndResult();
-        endMessage();
+        population.exportEndResult();
+        printEndMessage();
+        System.exit(0);
     }
 
     /**
@@ -77,27 +81,25 @@ public class ImageReconstruction {
     private void init() {
         if (id == 0) {
             display = new Display("Canvas", target_image.getWidth(), target_image.getHeight());
-            population = new Population(population_size, image_fragments, mutation_rate, target_image);
-            population.initialize();
         }
+        population = new Population(population_size, image_fragments, mutation_rate, target_image);
+        population.initialize();
     }
 
     public void draw() {
-        if (id == 0) {
-            bs = display.getCanvas().getBufferStrategy();
-            if(bs == null) {
-                display.getCanvas().createBufferStrategy(3);
-                draw();
-            }
-
-            g = bs.getDrawGraphics();
-            // drawing starts
-            g.clearRect(0, 0, target_image.getWidth(), target_image.getHeight());
-            population.draw(g);
-            // drawing ends
-            bs.show();
-            g.dispose();
+        bs = display.getCanvas().getBufferStrategy();
+        if(bs == null) {
+            display.getCanvas().createBufferStrategy(3);
+            draw();
         }
+
+        g = bs.getDrawGraphics();
+        // drawing starts
+        g.clearRect(0, 0, target_image.getWidth(), target_image.getHeight());
+        population.draw(g);
+        // drawing ends
+        bs.show();
+        g.dispose();
     }
 
     private void print() {
@@ -108,7 +110,7 @@ public class ImageReconstruction {
         System.out.println("----------------------------------");
     }
 
-    private void endMessage() {
+    private void printEndMessage() {
         System.out.println();
         System.out.println("----------------------------------");
         System.out.println("LOCAL MAXIMUM REACHED");

@@ -10,12 +10,12 @@ import java.io.IOException;
 public class Launcher {
     public static void main(String[] args) {
         String IMAGE_PATH = new File("images/monalisa.gif").getAbsolutePath();
-        int POPULATION_SIZE = 300;
-        int IMAGE_FRAGMENTS = 200;
+        int POPULATION_SIZE = 500;
+        int IMAGE_FRAGMENTS = 100;
         float MUTATION_RATE = 0.02f;
-        int MAX_GENERATIONS = 10000;
+        int MAX_GENERATIONS = 100;
         boolean useAlphaColors = false;
-        RunMode runMode = RunMode.DISTRIBUTED;
+        RunMode runMode = RunMode.SEQUENTIAL;
 
         Config conf = new Config();
         conf.setConfig(runMode, useAlphaColors);
@@ -28,6 +28,7 @@ public class Launcher {
         } catch (IOException e) {
             e.printStackTrace();
         }
+
         ImageReconstruction ir = new ImageReconstruction(POPULATION_SIZE, IMAGE_FRAGMENTS, MUTATION_RATE, MAX_GENERATIONS, TARGET_IMAGE);
         ir.run();
     }

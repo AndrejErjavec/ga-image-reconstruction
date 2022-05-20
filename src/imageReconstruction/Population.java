@@ -1,5 +1,7 @@
 package imageReconstruction;
 
+import mpi.MPI;
+
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
@@ -92,8 +94,8 @@ public class Population {
     }
 
     private void calculateFitnessDistributed() {
-        MSEDistributed msd = new MSEDistributed(population, targetImage);
-        msd.start();
+        MSEDistributed msed = new MSEDistributed(population, targetImage);
+        msed.start();
     }
 
     public void generateNewPopulation() {
@@ -151,8 +153,7 @@ public class Population {
     
     public void draw(Graphics g) {
         // System.out.println("Drawing best image...");
-        Image image = bestFittingImage;
-        image.draw(g);
+        bestFittingImage.draw(g);
     }
 
     public void exportEndResult() {
