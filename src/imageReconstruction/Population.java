@@ -35,7 +35,7 @@ public class Population {
 
     public void initialize() {
         for (int i = 0; i < this.size; i++) {
-            Image image = new Image(targetImage.getWidth(), targetImage.getHeight(), imageFragments);
+            Image image = new Image(targetImage.getWidth(), targetImage.getHeight(), imageFragments, true);
             population.add(image);
         }
         this.bestFittingImage = population.get(0);
@@ -107,7 +107,6 @@ public class Population {
 
             Image child = parentA.onePointCrossover(parentB);
             child.mutateOriginal(mutationRate);
-            child.generateImage();
             this.population.set(i, child);
         }
     }

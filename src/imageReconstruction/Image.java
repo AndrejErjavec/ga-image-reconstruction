@@ -18,11 +18,15 @@ public class Image {
     float fitness;
     int fitnessScore;
 
-    public Image(int width, int height, int fragment_count) {
+    public Image(int width, int height, int fragment_count, boolean fresh) {
         this.width = width;
         this.height = height;
         this.fragment_count = fragment_count;
-        this.initialize();
+        this.image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+        this.fragments = new TriangleFragment[fragment_count];
+        this.fitness = 0.0f;
+        this.fitnessScore = 0;
+        if (fresh) {this.initialize();}
     }
 
     public Image(BufferedImage image) {
@@ -32,11 +36,6 @@ public class Image {
     }
 
     private void initialize() {
-        this.image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
-        this.fragments = new TriangleFragment[fragment_count];
-        this.fitness = 0.0f;
-        this.fitnessScore = 0;
-
         for (int i = 0; i < fragment_count; i++) {
             int p1_pos_x = (int) (Math.random() * width);
             int p1_pos_y = (int) (Math.random() * height);
@@ -102,7 +101,7 @@ public class Image {
      * uniform crossover
      */
     public Image onePointCrossover(Image parent2) {
-        Image child = new Image(width, height, fragment_count);
+        Image child = new Image(width, height, fragment_count, false);
         double splitPoint = Math.random() * fragments.length;
         for (int i = 0; i < child.fragments.length; i++) {
             if (i <= splitPoint) {child.fragments[i] = this.fragments[i];}
@@ -112,7 +111,7 @@ public class Image {
     }
 
     public Image uniformCrossover(Image parent2) {
-        Image child = new Image(width, height, fragment_count);
+        Image child = new Image(width, height, fragment_count, false);
         for (int i = 0; i < child.fragments.length; i++) {
             double coin = Math.random();
             if (coin <= 0.5) {child.fragments[i] = this.fragments[i];}
@@ -166,9 +165,10 @@ public class Image {
                 fragments[i] = new TriangleFragment(new Point(p1_pos_x, p1_pos_y), new Point(p2_pos_x, p2_pos_y), new Point(p3_pos_x, p3_pos_y), color);
             }
         }
+        generateImage();
     }
 
-    public void generateImage() {
+    private void generateImage() {
         Graphics2D g = this.image.createGraphics();
         for (int i = 0; i < fragments.length; i++) {
             int p1_x = (int) fragments[i].p1.getX();
