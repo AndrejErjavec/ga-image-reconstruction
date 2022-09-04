@@ -111,11 +111,6 @@ public class Image {
         return child;
     }
 
-    public Image multiPointCrossover(Image parent2) {
-        Image child = new Image(width, height, fragment_count);
-        return child;
-    }
-
     public Image uniformCrossover(Image parent2) {
         Image child = new Image(width, height, fragment_count);
         for (int i = 0; i < child.fragments.length; i++) {

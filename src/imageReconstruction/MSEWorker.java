@@ -64,12 +64,12 @@ public class MSEWorker extends Thread {
             float diff = 0.0f;
             for (int i = 0; i < img.image.getHeight(); i++) {
                 for (int j = 0; j < img.image.getWidth(); j++) {
-                    Color srcPixelColor = new Color(img.image.getRGB(i, j));
+                    Color srcPixelColor = new Color(img.image.getRGB(j, i));
                     int srcPixelR = srcPixelColor.getRed();
                     int srcPixelG = srcPixelColor.getGreen();
                     int srcPixelB = srcPixelColor.getBlue();
 
-                    Color targetPixelColor = new Color(targetImage.getRGB(i, j));
+                    Color targetPixelColor = new Color(targetImage.getRGB(j, i));
                     int targetPixelR = targetPixelColor.getRed();
                     int targetPixelG = targetPixelColor.getGreen();
                     int targetPixelB = targetPixelColor.getBlue();
@@ -100,12 +100,12 @@ public class MSEWorker extends Thread {
         long chunkTmp = 0;
         for (int i = start; i < end; i++) {
             for (int j = 0; j < srcImage.getWidth(); j++) {
-                Color srcPixelColor = new Color(srcImage.getRGB(i, j));
+                Color srcPixelColor = new Color(srcImage.getRGB(j, i));
                 int srcPixelR = srcPixelColor.getRed();
                 int srcPixelG = srcPixelColor.getGreen();
                 int srcPixelB = srcPixelColor.getBlue();
 
-                Color targetPixelColor = new Color(targetImage.getRGB(i, j));
+                Color targetPixelColor = new Color(targetImage.getRGB(j, i));
                 int targetPixelR = targetPixelColor.getRed();
                 int targetPixelG = targetPixelColor.getGreen();
                 int targetPixelB = targetPixelColor.getBlue();

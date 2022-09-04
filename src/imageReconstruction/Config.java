@@ -13,7 +13,7 @@ public class Config {
     static int threads;
 
     public Config() {
-        this.threads = Runtime.getRuntime().availableProcessors();
+        this.threads = Runtime.getRuntime().availableProcessors() - 2;
     }
 
     public void setConfig(RunMode runMode, boolean useAlphaColors) {

@@ -92,23 +92,6 @@ public class FitnessFunctionTest {
             printFitnesses(images);
             System.out.println("------------------------");
         }
-
-
-        /**------------
-         * DISTRIBUTED
-         --------------*/
-
-        long startTime = System.currentTimeMillis();
-
-        MSEDistributed msed = new MSEDistributed(images, targetImage);
-        msed.start();
-
-        long endTime = System.currentTimeMillis();
-
-        System.out.println("DISTRIBUTED");
-        System.out.println("Time taken: " + (endTime - startTime) + "ms");
-        printFitnesses(images);
-        System.out.println("------------------------");
     }
 
     private static void printFitnesses(ArrayList<Image> images) {

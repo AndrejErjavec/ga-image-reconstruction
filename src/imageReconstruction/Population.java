@@ -53,7 +53,6 @@ public class Population {
                 selectionPool.addAll(population);
                 break;
             case DISTRIBUTED:
-                calculateFitnessDistributed();
                 selectionPool.addAll(population);
                 break;
         }
@@ -91,11 +90,6 @@ public class Population {
                 e.printStackTrace();
             }
         }
-    }
-
-    private void calculateFitnessDistributed() {
-        MSEDistributed msed = new MSEDistributed(population, targetImage);
-        msed.start();
     }
 
     public void generateNewPopulation() {

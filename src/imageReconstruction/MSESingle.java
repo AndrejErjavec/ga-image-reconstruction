@@ -11,7 +11,7 @@ public class MSESingle {
         float diff = 0;
         for (int i = 0; i < srcImage.getHeight(); i++) {
             for (int j = 0; j < srcImage.getWidth(); j++) {
-                Color srcPixelColor = new Color(srcImage.getRGB(i, j));
+                Color srcPixelColor = new Color(srcImage.getRGB(j, i));
                 int srcPixelR = srcPixelColor.getRed();
                 int srcPixelG = srcPixelColor.getGreen();
                 int srcPixelB = srcPixelColor.getBlue();
@@ -19,7 +19,7 @@ public class MSESingle {
                     System.out.println("RGB src: " + srcPixelR + ", " + srcPixelG + ", " + srcPixelB);
                 }*/
 
-                Color targetPixelColor = new Color(targetImage.getRGB(i, j));
+                Color targetPixelColor = new Color(targetImage.getRGB(j, i));
                 int targetPixelR = targetPixelColor.getRed();
                 int targetPixelG = targetPixelColor.getGreen();
                 int targetPixelB = targetPixelColor.getBlue();

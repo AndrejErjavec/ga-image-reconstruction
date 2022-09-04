@@ -35,7 +35,6 @@ public class ImageReconstruction {
             this.target_image = target_image;
         }
 
-        int id = MPI.COMM_WORLD.Rank();
 
     /**
      * PROGRAM RUNS HERE
@@ -45,14 +44,12 @@ public class ImageReconstruction {
         startTime = System.currentTimeMillis();
         init();
         start();
-        while (running && current_generation <= max_generations && noImprovementCount < 200) {
+        while (running && current_generation <= max_generations /*&& noImprovementCount < 200*/) {
             population.naturalSelection();
             population.generateNewPopulation();
-            if (id == 0) {
-                checkImprovement();
-                draw();
-                print();
-            }
+            checkImprovement();
+            draw();
+            print();
             current_generation++;
         }
         endTime = System.currentTimeMillis();
@@ -79,9 +76,7 @@ public class ImageReconstruction {
     }
 
     private void init() {
-        if (id == 0) {
-            display = new Display("Canvas", target_image.getWidth(), target_image.getHeight());
-        }
+        display = new Display("Canvas", target_image.getWidth(), target_image.getHeight());
         population = new Population(population_size, image_fragments, mutation_rate, target_image);
         population.initialize();
     }
@@ -104,9 +99,9 @@ public class ImageReconstruction {
 
     private void print() {
         System.out.println("Current generation: " + current_generation);
-        System.out.println("Best image fitness: " + Math.round(population.bestFittingImage.fitness * 100) / 100d);
+        // System.out.println("Best image fitness: " + Math.round(population.bestFittingImage.fitness * 100) / 100d);
         // System.out.println("Max fitness: " + population.maxFitness);
-        System.out.println("Average fitness: " + population.averageFitness);
+        // System.out.println("Average fitness: " + population.averageFitness);
         System.out.println("----------------------------------");
     }
 
