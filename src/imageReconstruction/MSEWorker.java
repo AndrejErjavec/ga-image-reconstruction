@@ -16,7 +16,6 @@ public class MSEWorker extends Thread {
     BufferedImage targetImage;
     ArrayList<Image> srcImages;
     AtomicReference<Float> result;
-    boolean last;
 
     /**
      * SUITABLE FOR CALCULATING MSE FOR SINGLE IMAGE AT A TIME
@@ -25,15 +24,13 @@ public class MSEWorker extends Thread {
      * @param srcImage - Image object to calculate MSE for
      * @param targetImage - reference image
      * @param result - Atomic variable for adding chunk results to
-     * @param last - is this the last thread
      */
-    public MSEWorker(int start, int end, BufferedImage srcImage, BufferedImage targetImage, AtomicReference<Float> result, boolean last) {
+    public MSEWorker(int start, int end, BufferedImage srcImage, BufferedImage targetImage, AtomicReference<Float> result) {
         this.start = start;
         this.end = end;
         this.srcImage = srcImage;
         this.targetImage = targetImage;
         this.result = result;
-        this.last = last;
     }
 
     /**

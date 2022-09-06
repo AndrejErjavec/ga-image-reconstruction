@@ -44,7 +44,7 @@ public class ImageReconstruction {
         startTime = System.currentTimeMillis();
         init();
         start();
-        while (running && current_generation <= max_generations /*&& noImprovementCount < 200*/) {
+        while (running && current_generation <= max_generations && noImprovementCount < 200) {
             population.naturalSelection();
             population.generateNewPopulation();
             checkImprovement();

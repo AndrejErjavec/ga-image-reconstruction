@@ -12,10 +12,10 @@ import java.io.IOException;
 public class Launcher {
     public static void main(String[] args) {
         String IMAGE_PATH = new File("images/monalisa.gif").getAbsolutePath();
-        int POPULATION_SIZE = 100;
+        int POPULATION_SIZE = 200;
         int IMAGE_FRAGMENTS = 200;
         float MUTATION_RATE = 0.02f;
-        int MAX_GENERATIONS = 4000;
+        int MAX_GENERATIONS = 1000;
         boolean useAlphaColors = false;
         RunMode runMode = RunMode.SEQUENTIAL;
 

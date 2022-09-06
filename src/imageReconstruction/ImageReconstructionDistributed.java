@@ -61,7 +61,7 @@ public class ImageReconstructionDistributed {
         }
 
         start();
-        while (running && current_generation < max_generations) {
+        while (running && current_generation < max_generations && noImprovementCount < 200) {
             if (id == 0) {
                 srcImagesArray = new int[population.population.size() * population.population.get(0).width * population.population.get(0).height];
                 targetImageArray = new int[targetImage.getWidth() * targetImage.getHeight()];
@@ -91,123 +91,123 @@ public class ImageReconstructionDistributed {
             }
 
 
-        // broadcast target image array size
-        MPI.COMM_WORLD.Bcast(targetImageArraySize, 0, 1, MPI.INT, 0);
-        // broadcast src images array size
-        MPI.COMM_WORLD.Bcast(srcImagesArraySize, 0, 1, MPI.INT, 0);
-        // broadcast single image size
-        MPI.COMM_WORLD.Bcast(imageSize, 0, 1, MPI.INT, 0);
+            // broadcast target image array size
+            MPI.COMM_WORLD.Bcast(targetImageArraySize, 0, 1, MPI.INT, 0);
+            // broadcast src images array size
+            MPI.COMM_WORLD.Bcast(srcImagesArraySize, 0, 1, MPI.INT, 0);
+            // broadcast single image size
+            MPI.COMM_WORLD.Bcast(imageSize, 0, 1, MPI.INT, 0);
 
-        if (id != 0) {
-            targetImageArray = new int[targetImageArraySize[0]];
-            imageSize = new int[imageSize[0]];
-        }
-
-        // broadcast target image array
-        MPI.COMM_WORLD.Bcast(targetImageArray, 0, targetImageArraySize[0], MPI.INT, 0);
-        // broadcast single image size
-        MPI.COMM_WORLD.Bcast(imageSize, 0, 1, MPI.INT, 0);
-
-        /**
-         * prepare data for scatter
-         */
-
-        // array with chunk sizes (in images) for each process
-        int[] chunkSizes = new int[size];
-        int imagesRemaining = srcImagesArraySize[0] / imageSize[0];
-        int ci = 0;
-        while (imagesRemaining > 0) {
-            if (ci == chunkSizes.length) ci = 0;
-            chunkSizes[ci] += 1;
-            imagesRemaining--;
-            ci++;
-        }
-
-        // array with chunk sizes (in pixels) for each process
-        int[] sendCount = new int[size];
-        for (int i = 0; i < sendCount.length; i++) {
-            sendCount[i] = chunkSizes[i] * imageSize[0];
-        }
-
-        int[] displacements = new int[size];
-        displacements[0] = 0;
-        for (int i = 1; i < displacements.length; i++) {
-            displacements[i] = displacements[i-1] + sendCount[i-1];
-        }
-
-        int[] chunk = new int[sendCount[id]];
-
-        /**
-         * scatters: srcImageArray
-         * to: chunk of each process
-         */
-        MPI.COMM_WORLD.Scatterv(srcImagesArray, 0, sendCount, displacements, MPI.INT, chunk, 0, chunk.length, MPI.INT, 0);
-
-        int imagesPerChunk = chunkSizes[id]; // = chunk.length / imageSize[0];
-        float[] chunkFitnesses = new float[imagesPerChunk];
-
-        /**
-         * calculate fitness
-         */
-        for (int i = 0; i < imagesPerChunk; i++) {
-            float diff = 0.0f;
-            int index = 0;
-
-            for (int j = 0; j < imageSize[0]; j++) {
-                Color srcPixelColor = new Color(chunk[i*imageSize[0] + j]);
-                int srcPixelR = srcPixelColor.getRed();
-                int srcPixelG = srcPixelColor.getGreen();
-                int srcPixelB = srcPixelColor.getBlue();
-
-                Color targetPixelColor = new Color(targetImageArray[index]);
-                int targetPixelR = targetPixelColor.getRed();
-                int targetPixelG = targetPixelColor.getGreen();
-                int targetPixelB = targetPixelColor.getBlue();
-
-                int diffR = 255 - Math.abs(srcPixelR - targetPixelR);
-                int diffG = 255 - Math.abs(srcPixelG - targetPixelG);
-                int diffB = 255 - Math.abs(srcPixelB - targetPixelB);
-
-                double diffR_sq = Math.pow(diffR, 2d);
-                double diffG_sq = Math.pow(diffG, 2d);
-                double diffB_sq = Math.pow(diffB, 2d);
-
-                diff += (diffR_sq + diffG_sq + diffB_sq);
-                index++;
-            }
-            diff = diff / (3 * imageSize[0]);
-            // fitness of one image
-            chunkFitnesses[i] = diff;
-        }
-
-        float[] allImagesFitnesses = new float[srcImagesArraySize[0] / imageSize[0]];
-
-        int[] displacementsGather = new int[size];
-        displacementsGather[0] = 0;
-        for (int i = 1; i < displacementsGather.length; i++) {
-            displacementsGather[i] = displacementsGather[i-1] + chunkSizes[i-1];
-        }
-
-        /**
-         * gathers: chunkFitnesses
-         * to: allImageFitnesses
-         */
-        MPI.COMM_WORLD.Gatherv(chunkFitnesses, 0, chunkFitnesses.length, MPI.FLOAT, allImagesFitnesses, 0, chunkSizes, displacementsGather, MPI.FLOAT, 0);
-
-        // first thread assigns fitness values to all images
-        if (id == 0) {
-            for (int i = 0; i < allImagesFitnesses.length; i++) {
-                population.population.get(i).fitness = allImagesFitnesses[i];
+            if (id != 0) {
+                targetImageArray = new int[targetImageArraySize[0]];
+                imageSize = new int[imageSize[0]];
             }
 
-            population.naturalSelection();
-            population.generateNewPopulation();
+            // broadcast target image array
+            MPI.COMM_WORLD.Bcast(targetImageArray, 0, targetImageArraySize[0], MPI.INT, 0);
+            // broadcast single image size
+            MPI.COMM_WORLD.Bcast(imageSize, 0, 1, MPI.INT, 0);
 
-            checkImprovement();
-            draw();
-            print();
-            current_generation++;
-        }
+            /**
+             * prepare data for scatter
+             */
+
+            // array with chunk sizes (in images) for each process
+            int[] chunkSizes = new int[size];
+            int imagesRemaining = srcImagesArraySize[0] / imageSize[0];
+            int ci = 0;
+            while (imagesRemaining > 0) {
+                if (ci == chunkSizes.length) ci = 0;
+                chunkSizes[ci] += 1;
+                imagesRemaining--;
+                ci++;
+            }
+
+            // array with chunk sizes (in pixels) for each process
+            int[] sendCount = new int[size];
+            for (int i = 0; i < sendCount.length; i++) {
+                sendCount[i] = chunkSizes[i] * imageSize[0];
+            }
+
+            int[] displacements = new int[size];
+            displacements[0] = 0;
+            for (int i = 1; i < displacements.length; i++) {
+                displacements[i] = displacements[i-1] + sendCount[i-1];
+            }
+
+            int[] chunk = new int[sendCount[id]];
+
+            /**
+             * scatters: srcImageArray
+             * to: chunk of each process
+             */
+            MPI.COMM_WORLD.Scatterv(srcImagesArray, 0, sendCount, displacements, MPI.INT, chunk, 0, chunk.length, MPI.INT, 0);
+
+            int imagesPerChunk = chunkSizes[id]; // = chunk.length / imageSize[0];
+            float[] chunkFitnesses = new float[imagesPerChunk];
+
+            /**
+             * calculate fitness
+             */
+            for (int i = 0; i < imagesPerChunk; i++) {
+                float diff = 0.0f;
+                int index = 0;
+
+                for (int j = 0; j < imageSize[0]; j++) {
+                    Color srcPixelColor = new Color(chunk[i*imageSize[0] + j]);
+                    int srcPixelR = srcPixelColor.getRed();
+                    int srcPixelG = srcPixelColor.getGreen();
+                    int srcPixelB = srcPixelColor.getBlue();
+
+                    Color targetPixelColor = new Color(targetImageArray[index]);
+                    int targetPixelR = targetPixelColor.getRed();
+                    int targetPixelG = targetPixelColor.getGreen();
+                    int targetPixelB = targetPixelColor.getBlue();
+
+                    int diffR = 255 - Math.abs(srcPixelR - targetPixelR);
+                    int diffG = 255 - Math.abs(srcPixelG - targetPixelG);
+                    int diffB = 255 - Math.abs(srcPixelB - targetPixelB);
+
+                    double diffR_sq = Math.pow(diffR, 2d);
+                    double diffG_sq = Math.pow(diffG, 2d);
+                    double diffB_sq = Math.pow(diffB, 2d);
+
+                    diff += (diffR_sq + diffG_sq + diffB_sq);
+                    index++;
+                }
+                diff = diff / (3 * imageSize[0]);
+                // fitness of one image
+                chunkFitnesses[i] = diff;
+            }
+
+            float[] allImagesFitnesses = new float[srcImagesArraySize[0] / imageSize[0]];
+
+            int[] displacementsGather = new int[size];
+            displacementsGather[0] = 0;
+            for (int i = 1; i < displacementsGather.length; i++) {
+                displacementsGather[i] = displacementsGather[i-1] + chunkSizes[i-1];
+            }
+
+            /**
+             * gathers: chunkFitnesses
+             * to: allImageFitnesses
+             */
+            MPI.COMM_WORLD.Gatherv(chunkFitnesses, 0, chunkFitnesses.length, MPI.FLOAT, allImagesFitnesses, 0, chunkSizes, displacementsGather, MPI.FLOAT, 0);
+
+            // first thread assigns fitness values to all images
+            if (id == 0) {
+                for (int i = 0; i < allImagesFitnesses.length; i++) {
+                    population.population.get(i).fitness = allImagesFitnesses[i];
+                }
+
+                population.naturalSelection();
+                population.generateNewPopulation();
+
+                checkImprovement();
+                draw();
+                print();
+                current_generation++;
+            }
         }
 
         endTime = System.currentTimeMillis();
